@@ -1,10 +1,10 @@
+import dotenv from 'dotenv'
 import express from 'express'
 import fs from 'fs'
 import { google } from 'googleapis'
 import open from 'open'
 import puppeteer from 'puppeteer'
 import xlsx from 'xlsx'
-import dotenv from 'dotenv'
 
 dotenv.config()
 
@@ -102,6 +102,16 @@ function calculateDateDifference(currentDate, targetDate) {
   return yearDiff + monthDiff
 }
 
+// Calculate year and month differences for navigation
+const calculateMonthsToNavigate = (currentMonth, currentYear, targetMonth, targetYear, months) => {
+  // Convert years to months since epoch
+  const currentMonthsSinceEpoch = (parseInt(currentYear) * 12) + months[currentMonth]
+  const targetMonthsSinceEpoch = (targetYear * 12) + months[targetMonth]
+  
+  // The difference is how many months we need to navigate
+  return currentMonthsSinceEpoch - targetMonthsSinceEpoch
+}
+
 // Modify the date selection part in loginToExpediaPartner function
 async function setDateRange(page, start_date, end_date) {
   try {
@@ -150,44 +160,26 @@ async function setDateRange(page, start_date, end_date) {
       throw new Error('Target year is greater than current year')
     }
 
-    // Calculate year difference (fixed)
-    let yearDiff = (parseInt(currentYear) - targetYear)
-
-    if(yearDiff < 0) {
-      yearDiff = 0
-    }
-
-    yearDiff = yearDiff * 12
-
-
-    console.log('Year difference:', yearDiff)
-
-    // Step 2: Calculate month index difference (fixed)
-    const months = {
-      'January': 1, 'February': 2, 'March': 3, 'April': 4,
-      'May': 5, 'June': 6, 'July': 7, 'August': 8,
-      'September': 9, 'October': 10, 'November': 11, 'December': 12
-    }
+    // Calculate months to navigate for start date
+    const totalMonthsToNavigate = calculateMonthsToNavigate(
+      currentMonth,
+      currentYear,
+      targetMonth,
+      targetYear,
+      {
+        'January': 1, 'February': 2, 'March': 3, 'April': 4,
+        'May': 5, 'June': 6, 'July': 7, 'August': 8,
+        'September': 9, 'October': 10, 'November': 11, 'December': 12
+      }
+    )
     
-    let monthDiff = 0
-    if (currentMonth !== targetMonth) {
-      currentMonth.toLowerCase()
-      targetMonth.toLowerCase()
-      console.log('Current month:', currentMonth)
-      console.log('Target month:', targetMonth)
-      monthDiff = months[currentMonth] - months[targetMonth] 
-    }
-
-    console.log('month diff ', monthDiff)
-    // Total navigation needed
-    const totalMonthsToNavigate = Number(yearDiff) + Number(monthDiff)
     console.log('Total months to navigate (start):', totalMonthsToNavigate)
 
-    // Navigate months
+    // Navigate months for start date
     const navigationButtons = await page.$$('.fds-datepicker-navigation button')
     const navigationButton = totalMonthsToNavigate > 0 
-      ? navigationButtons[1] // next button
-      : navigationButtons[0] // prev button
+      ? navigationButtons[0] // prev button for going back in time
+      : navigationButtons[1] // next button for going forward
     
     for (let i = 0; i < Math.abs(totalMonthsToNavigate); i++) {
       await navigationButton.click()
@@ -204,7 +196,7 @@ async function setDateRange(page, start_date, end_date) {
       }
     }, targetDay)
 
-    // Handle end date selection - Updated with better waiting
+    // Handle end date selection
     await new Promise(r => setTimeout(r, 1000))
     
     // Wait for and click the To date input
@@ -216,15 +208,8 @@ async function setDateRange(page, start_date, end_date) {
     // Make sure calendar is visible before proceeding
     await page.waitForSelector('.second-month h2', { visible: true })
     
-    // Get second month header for end date
-    const ToDateInput = await page.$('.to-input-label input.fds-field-input')
-    await ToDateInput.click()
-    await new Promise(r => setTimeout(r, 1000))
-
     const secondMonthHeader = await page.$eval('.second-month h2', el => el.textContent.trim())
     console.log('Second month header:', secondMonthHeader)
-
-   
 
     const [endCurrentMonth, endCurrentYear] = secondMonthHeader.split(' ')
     console.log('End current month:', endCurrentMonth)
@@ -236,68 +221,51 @@ async function setDateRange(page, start_date, end_date) {
     console.log('End target year:', endTargetYear)
     console.log('End Date:', endDate)
 
-
-    // Calculate year difference (fixed)
-    let endYearDiff = (parseInt(endCurrentYear) - endTargetYear)
-
-    if(endYearDiff < 0) {
-      endYearDiff = 0
-    }
-
-    endYearDiff = endYearDiff * 12
-
-
-    console.log('End Year difference:', endYearDiff)
-    // Step 2: Calculate month index difference (fixed)
+    // Calculate months to navigate for end date
+    const endTotalMonthsToNavigate = calculateMonthsToNavigate(
+      endCurrentMonth,
+      endCurrentYear,
+      endTargetMonth,
+      endTargetYear,
+      {
+        'January': 1, 'February': 2, 'March': 3, 'April': 4,
+        'May': 5, 'June': 6, 'July': 7, 'August': 8,
+        'September': 9, 'October': 10, 'November': 11, 'December': 12
+      }
+    )
     
-    let endMonthDiff = 0
-    if (endCurrentMonth !== endTargetMonth) {
-      endCurrentMonth.toLowerCase()
-      endTargetMonth.toLowerCase()
-      console.log('End Current month:', endCurrentMonth)
-      console.log('End Target month:', endTargetMonth)
-      endMonthDiff = months[endCurrentMonth] - months[endTargetMonth] 
+    console.log('Total end months to navigate:', endTotalMonthsToNavigate)
+
+    // Make sure navigation buttons are visible
+    await page.waitForSelector('.fds-datepicker-navigation button', { visible: true })
+    const navigationButtonsEnd = await page.$$('.fds-datepicker-navigation button')
+    
+    // Navigate to end date month
+    const endNavigationButton = endTotalMonthsToNavigate > 0 
+      ? navigationButtonsEnd[0] // prev button for going back in time
+      : navigationButtonsEnd[1] // next button for going forward
+
+    // Click navigation button with evaluation
+    for (let i = 0; i < Math.abs(endTotalMonthsToNavigate); i++) {
+      await page.evaluate(button => button.click(), endNavigationButton)
+      await new Promise(r => setTimeout(r, 200))
     }
 
-    console.log('end month diff ', endMonthDiff)
-    // Total navigation needed
-    const endTotalMonthsToNavigate = Number(endYearDiff) + Number(endMonthDiff)
-    console.log('Total end months to navigate (start):', endTotalMonthsToNavigate)
+    // Select end day with evaluation
+    const endTargetDay = endDate.getDate()
+    await page.evaluate((day) => {
+      const dayButtons = document.querySelectorAll('.second-month .fds-datepicker-day')
+      const dayIndex = day - 1
+      if (dayButtons[dayIndex] && !dayButtons[dayIndex].disabled) {
+        dayButtons[dayIndex].click()
+      } else {
+        throw new Error('End date day button not found or disabled')
+      }
+    }, endTargetDay)
 
-   // Make sure navigation buttons are visible
-   await page.waitForSelector('.fds-datepicker-navigation button', { visible: true })
-   const navigationButtonsEnd = await page.$$('.fds-datepicker-navigation button')
-   
-   // Navigate to end date month
-   const endNavigationButton = endTotalMonthsToNavigate > 0
-     ? navigationButtonsEnd[1]
-     : navigationButtonsEnd[0]
-
-   // Click navigation button with evaluation
-   for (let i = 0; i < Math.abs(endTotalMonthsToNavigate); i++) {
-     await page.evaluate(button => button.click(), endNavigationButton)
-     await new Promise(r => setTimeout(r, 200))
-   }
-
-
-    // Select day (day - 1 for index)
-     // Select end day with evaluation
-     const endTargetDay = endDate.getDate()
-     await page.evaluate((day) => {
-       const dayButtons = document.querySelectorAll('.second-month .fds-datepicker-day')
-       const dayIndex = day - 1
-       if (dayButtons[dayIndex] && !dayButtons[dayIndex].disabled) {
-         dayButtons[dayIndex].click()
-       } else {
-         throw new Error('End date day button not found or disabled')
-       }
-     }, endTargetDay)
-
-    // Handle end date selection - Updated with better waiting
     await new Promise(r => setTimeout(r, 1000))
 
-
-    // Try clicking Done button directly
+    // Click done button
     await page.evaluate(() => {
       const doneButton = document.querySelector('.fds-dropdown-footer button')
       if (doneButton) {
@@ -307,7 +275,6 @@ async function setDateRange(page, start_date, end_date) {
       }
     })
     await new Promise(r => setTimeout(r, 1000))
-
 
     // Verify dates were set
     const fromValue = await page.$eval('.from-input-label input.fds-field-input', el => el.value)
@@ -325,47 +292,37 @@ async function setDateRange(page, start_date, end_date) {
     const toMatches = toValue === expectedToDateWithZeros || toValue === expectedToDateWithoutZeros
 
     if (!fromMatches || !toMatches) {
-      console.log('Date mismatch detected')
-      // Try clicking the dates again
+      console.log('Date mismatch detected, attempting final correction...')
       await page.evaluate((dates) => {
         const [startDateStr, endDateStr] = dates
         const [startMonth, startDay, startYear] = startDateStr.split('/')
         const [endMonth, endDay, endYear] = endDateStr.split('/')
         
-        // Find and click start date
-        const startButtons = document.querySelectorAll('.first-month .fds-datepicker-day')
-        for (const button of startButtons) {
-          if (button.textContent.trim() === startDay) {
-            button.click()
-            break
-          }
-        }
+        // Re-open the date picker
+        document.querySelector('.from-input-label input.fds-field-input').click()
         
-        // Find and click end date
-        const endButtons = document.querySelectorAll('.second-month .fds-datepicker-day')
-        for (const button of endButtons) {
-          if (button.textContent.trim() === endDay) {
-            button.click()
-            break
-          }
-        }
-
-        // Click done button
-        const doneButton = document.querySelector('.fds-dropdown-footer button')
-        if (doneButton) doneButton.click()
+        // Wait a bit and try to select dates again
+        setTimeout(() => {
+          const firstMonthDays = document.querySelectorAll('.first-month .fds-datepicker-day')
+          const secondMonthDays = document.querySelectorAll('.second-month .fds-datepicker-day')
+          
+          // Find and click the correct days
+          const startDateElement = Array.from(firstMonthDays)
+            .find(el => el.textContent.trim() === startDay && !el.classList.contains('disabled'))
+          const endDateElement = Array.from(secondMonthDays)
+            .find(el => el.textContent.trim() === endDay && !el.classList.contains('disabled'))
+          
+          if (startDateElement) startDateElement.click()
+          if (endDateElement) endDateElement.click()
+          
+          // Click done button
+          const doneButton = document.querySelector('.fds-dropdown-footer button')
+          if (doneButton) doneButton.click()
+        }, 1000)
       }, [start_date, end_date])
-
-      // Wait and verify again
+      
+      // Wait for the final correction to complete
       await new Promise(r => setTimeout(r, 2000))
-      const newFromValue = await page.$eval('.from-input-label input.fds-field-input', el => el.value)
-      const newToValue = await page.$eval('.to-input-label input.fds-field-input', el => el.value)
-
-      // const newFromMatches = newFromValue === expectedFromDateWithZeros || newFromValue === expectedFromDateWithoutZeros
-      // const newToMatches = newToValue === expectedToDateWithZeros || newToValue === expectedToDateWithoutZeros
-
-      // if (!newFromMatches || !newToMatches) {
-      //   throw new Error(`Date values were not set correctly. Expected ${expectedFromDateWithoutZeros} - ${expectedToDateWithoutZeros} or ${expectedFromDateWithZeros} - ${expectedToDateWithZeros}, got ${newFromValue} - ${newToValue}`)
-      // }
     }
 
     return { from: fromValue, to: toValue }
