@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminal Logs</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body style="background: #2d2d2d">
+    <div class="terminal-container">
+      <div class="terminal-header">
+        <div class="window-controls">
+          <div class="window-control close"></div>
+          <div class="window-control minimize"></div>
+          <div class="window-control maximize"></div>
+        </div>
+        <div class="terminal-tabs">
+          <button class="terminal-tab active" data-tab="success">
+            Success Logs
+          </button>
+          <button class="terminal-tab" data-tab="error">Error Logs</button>
+          <button class="terminal-tab" data-tab="combined">
+            Combined Logs
+          </button>
+        </div>
+      </div>
+      <div class="terminal-content" id="logContent">
+        <!-- Logs will be inserted here -->
+      </div>
+    </div>
+    <script>
+      // Function to fetch and display logs
+      async function fetchLogs(type = "success") {
+        try {
+          console.log("Fetching logs for type:", type);
+          const response = await fetch(`/api/logs/${type}`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const logs = await response.json();
+          console.log("Received logs:", logs);
+          displayLogs(logs);
+        } catch (error) {
+          console.error("Error fetching logs:", error);
+          document.getElementById("logContent").innerHTML = `
+                    <div class="log-entry error">
+                        <span class="log-message">Error loading logs: ${error.message}</span>
+                    </div>
+                `;
+        }
+      }
+
+      function displayLogs(logs) {
+        const logContent = document.getElementById("logContent");
+        logContent.innerHTML = logs
+          .map(
+            (log) => `
+                <div class="log-entry">
+                    <span class="log-timestamp">[${log.timestamp}]</span>
+                    <span class="log-level log-level-${log.level}">${
+              log.level
+            }</span>
+                    <span class="log-message">${log.message}</span>
+                    ${
+                      log.details
+                        ? `
+                        <div class="log-details">
+                            <pre>${JSON.stringify(log.details, null, 2)}</pre>
+                        </div>
+                    `
+                        : ""
+                    }
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      // Tab switching logic
+      document.querySelectorAll(".terminal-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          // Update active tab
+          document
+            .querySelector(".terminal-tab.active")
+            .classList.remove("active");
+          tab.classList.add("active");
+
+          // Fetch logs for selected tab
+          fetchLogs(tab.dataset.tab);
+        });
+      });
+
+      // Add auto-refresh every 5 seconds
+      setInterval(() => {
+        const activeTab = document.querySelector(".terminal-tab.active");
+        if (activeTab) {
+          fetchLogs(activeTab.dataset.tab);
+        }
+      }, 5000);
+
+      // Initial load
+      fetchLogs("success");
+    </script>
+  </body>
+</html>
