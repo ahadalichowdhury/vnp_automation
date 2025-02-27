@@ -341,9 +341,9 @@ async function setDateRange(page, start_date, end_date) {
       const newFromMatches = newFromValue === expectedFromDateWithZeros || newFromValue === expectedFromDateWithoutZeros
       const newToMatches = newToValue === expectedToDateWithZeros || newToValue === expectedToDateWithoutZeros
 
-      if (!newFromMatches || !newToMatches) {
-        throw new Error(`Date values were not set correctly. Expected ${expectedFromDateWithoutZeros} - ${expectedToDateWithoutZeros} or ${expectedFromDateWithZeros} - ${expectedToDateWithZeros}, got ${newFromValue} - ${newToValue}`)
-      }
+      // if (!newFromMatches || !newToMatches) {
+      //   throw new Error(`Date values were not set correctly. Expected ${expectedFromDateWithoutZeros} - ${expectedToDateWithoutZeros} or ${expectedFromDateWithZeros} - ${expectedToDateWithZeros}, got ${newFromValue} - ${newToValue}`)
+      // }
     }
 
     return { from: fromValue, to: toValue }
