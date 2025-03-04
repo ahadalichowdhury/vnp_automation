@@ -783,11 +783,50 @@ async function loginToExpediaPartner(
                       const guestNameButton = await row.$('td.guestName button.guestNameLink')
                       await guestNameButton.click()
                       
-                      // Wait for initial dialog to appear
-                      await page.waitForSelector('.fds-dialog-content', {
-                        visible: true,
-                        timeout: 8000
+                      // Wait for initial dialog to appear with timeout
+                      try {
+                        await Promise.race([
+                          page.waitForSelector('.fds-dialog', {
+                            visible: true,
+                            timeout: 8000
+                          }),
+                          new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Dialog timeout')), 8000)
+                          )
+                        ])
+                      } catch (error) {
+                        console.log('Dialog did not appear within timeout, skipping to next reservation')
+                        continue
+                      }
+
+                      // Check if this is a canceled reservation
+                      const isCanceled = await page.evaluate(() => {
+                        const dialogTitle = document.querySelector('.fds-dialog-title')
+                        return dialogTitle && dialogTitle.textContent.includes('Cancelled')
                       })
+
+                      if (isCanceled) {
+                        console.log('Found canceled reservation, closing dialog...')
+                        try {
+                          // Try multiple methods to close the dialog
+                          await Promise.race([
+                            // Method 1: Click the close button
+                            page.click('.fds-dialog-header button.dialog-close'),
+                            // Method 2: Use JavaScript to click the close button
+                            page.evaluate(() => {
+                              const closeButton = document.querySelector('.fds-dialog-header button.dialog-close')
+                              if (closeButton) closeButton.click()
+                            }),
+                            // Method 3: Press Escape key
+                            page.keyboard.press('Escape')
+                          ])
+                          await delay(1500) // Wait for dialog to close
+                          continue // Skip to next reservation
+                        } catch (error) {
+                          console.log('Warning: Could not close canceled reservation dialog')
+                          continue
+                        }
+                      }
 
                       // Wait a bit for content to load
                       await delay(2000)
@@ -805,20 +844,52 @@ async function loginToExpediaPartner(
 
                       // Get card details with retry mechanism
                       let cardData = null
+                      let paymentData = null
                       let retries = 0
-                      while (!cardData && retries < 3) {
+                      while ((!cardData && !paymentData) && retries < 3) {
                         try {
+                          // First try to get card details
                           cardData = await page.evaluate(() => {
                             const cardNumber = document.querySelector('.cardNumber.replay-conceal bdi')?.textContent.trim() || ''
                             const expiryDate = document.querySelector('.cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal')?.textContent.trim() || ''
                             const cvv = document.querySelectorAll('.cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal')[1]?.textContent.trim() || ''
                             
-                            return {
-                              cardNumber,
-                              expiryDate,
-                              cvv
+                            if (cardNumber) {
+                              return {
+                                cardNumber,
+                                expiryDate,
+                                cvv
+                              }
                             }
+                            return null
                           })
+
+                          // If no card data, try to get payment information
+                          if (!cardData) {
+                            paymentData = await page.evaluate(() => {
+                              // Find all section titles
+                              const sectionTitles = Array.from(document.querySelectorAll('.sidePanelSectionTitle'))
+                              
+                              // Find the payment sections
+                              const totalGuestPaymentTitle = sectionTitles.find(el => el.textContent.includes('Total guest payment'))
+                              const expediaCompensationTitle = sectionTitles.find(el => el.textContent.includes('Expedia compensation'))
+                              const totalPayoutTitle = sectionTitles.find(el => el.textContent.includes('Your total payout'))
+                              
+                              // Get the values
+                              const totalGuestPayment = totalGuestPaymentTitle?.nextElementSibling?.querySelector('.fds-currency-value')?.textContent.trim() || ''
+                              const expediaCompensation = expediaCompensationTitle?.nextElementSibling?.querySelector('.fds-currency-value')?.textContent.trim() || ''
+                              const totalPayout = totalPayoutTitle?.nextElementSibling?.querySelector('.fds-currency-value')?.textContent.trim() || ''
+                              
+                              if (totalGuestPayment) {
+                                return {
+                                  totalGuestPayment,
+                                  expediaCompensation,
+                                  totalPayout
+                                }
+                              }
+                              return null
+                            })
+                          }
                         } catch (e) {
                           retries++
                           await delay(1000)
@@ -833,10 +904,13 @@ async function loginToExpediaPartner(
                         console.log('Warning: Could not close dialog normally')
                       }
 
-                      // Add to reservations array
+                      // Add to reservations array with either card data or payment data
                       allReservations.push({
                         ...basicData,
-                        ...cardData
+                        ...(cardData || {}),
+                        ...(paymentData || {}),
+                        hasCardInfo: !!cardData,
+                        hasPaymentInfo: !!paymentData
                       })
 
                     } catch (error) {
@@ -894,7 +968,13 @@ async function loginToExpediaPartner(
                   'Booked Date',
                   'Card Number',
                   'Expiry Date',
-                  'CVV'
+                  'CVV',
+                  'Has Card Info',
+                  'Has Payment Info',
+                  'Total Guest Payment',
+                  'Expedia Compensation',
+                  'Total Payout',
+                  'Status'
                 ],
                 ...allReservations.map(res => [
                   res.guestName,
@@ -905,9 +985,15 @@ async function loginToExpediaPartner(
                   res.roomType,
                   res.bookingAmount,
                   res.bookedDate,
-                  res.cardNumber,
-                  res.expiryDate,
-                  res.cvv
+                  res.cardNumber || 'N/A',
+                  res.expiryDate || 'N/A',
+                  res.cvv || 'N/A',
+                  res.hasCardInfo ? 'Yes' : 'No',
+                  res.hasPaymentInfo ? 'Yes' : 'No',
+                  res.totalGuestPayment || 'N/A',
+                  res.expediaCompensation || 'N/A',
+                  res.totalPayout || 'N/A',
+                  res.status || 'Active'
                 ])
               ]
 
@@ -1102,3 +1188,4 @@ app.listen(port, () => {
     open(`http://localhost:${port}/auth`)
   }
 })
+
