@@ -1,6 +1,6 @@
+import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
-import cors from 'cors'
 import fs from 'fs'
 import { google } from 'googleapis'
 import http from "http"
@@ -18,7 +18,12 @@ const __dirname = path.dirname(__filename)
 dotenv.config()
 
 const app = express()
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:3001', // Frontend URL
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 const server = http.createServer(app)
 const io = new Server(server, {
     cors: {
@@ -30,7 +35,7 @@ const io = new Server(server, {
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')))
 
-const port = 5000
+const port = 3000
 
 const CLIENT_ID = process.env.CLIENT_ID
 const CLIENT_SECRET = process.env.CLIENT_SECRET
@@ -1131,7 +1136,8 @@ app.get('/oauth2callback', async (req, res) => {
     const { tokens } = await oauth2Client.getToken(code)
     oauth2Client.setCredentials(tokens)
     fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens))
-    res.send('Authentication successful! You can close this window.')
+    // res.send('Authentication successful! You can close this window.')
+    res.redirect(process.env.FRONTEND_REDIRECT_URI);
   } catch (error) {
     res.status(500).send('Error retrieving access token: ' + error.message)
   }
