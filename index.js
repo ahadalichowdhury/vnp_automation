@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import express from 'express'
+import cors from 'cors'
 import fs from 'fs'
 import { google } from 'googleapis'
 import http from "http"
@@ -17,6 +18,7 @@ const __dirname = path.dirname(__filename)
 dotenv.config()
 
 const app = express()
+app.use(cors())
 const server = http.createServer(app)
 const io = new Server(server, {
     cors: {
@@ -28,7 +30,7 @@ const io = new Server(server, {
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')))
 
-const port = 3000
+const port = 5000
 
 const CLIENT_ID = process.env.CLIENT_ID
 const CLIENT_SECRET = process.env.CLIENT_SECRET
