@@ -5,56 +5,94 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-class Logger {
-    constructor() {
-        // Create logs directory if it doesn't exist
-        const logsDir = path.join(__dirname, 'logs');
-        if (!fs.existsSync(logsDir)) {
-            fs.mkdirSync(logsDir);
-        }
+// Define the data.json file path
+const dataFilePath = path.join(__dirname, 'data.json');
 
-        // Initialize log files with timestamps
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        this.successLogPath = path.join(logsDir, `success_${timestamp}.log`);
-        this.errorLogPath = path.join(logsDir, `error_${timestamp}.log`);
-        this.combinedLogPath = path.join(logsDir, `combined_${timestamp}.log`);
-    }
+// Initialize data.json if it doesn't exist
+if (!fs.existsSync(dataFilePath)) {
+    fs.writeFileSync(dataFilePath, JSON.stringify({ logs: [] }, null, 2));
+}
 
-    formatMessage(level, message, details = null) {
+// Create a write stream for the log file
+const logStream = fs.createWriteStream(dataFilePath, { flags: 'a' });
+
+// Custom logger function
+const logger = {
+    info: (message) => {
         const timestamp = new Date().toISOString();
-        let logMessage = `[${timestamp}] [${level}] ${message}`;
-        if (details) {
-            logMessage += `\nDetails: ${JSON.stringify(details, null, 2)}\n`;
-        }
-        return logMessage + '\n';
+        const logEntry = {
+            timestamp,
+            level: 'INFO',
+            message,
+            data: null
+        };
+        
+        console.log(message);
+        appendToLog(logEntry);
+    },
+    error: (message, error = null) => {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            level: 'ERROR',
+            message,
+            data: error ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            } : null
+        };
+        
+        console.error(message);
+        appendToLog(logEntry);
+    },
+    warn: (message) => {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            level: 'WARN',
+            message,
+            data: null
+        };
+        
+        console.warn(message);
+        appendToLog(logEntry);
+    },
+    data: (message, data) => {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            level: 'DATA',
+            message,
+            data
+        };
+        
+        console.log(message);
+        appendToLog(logEntry);
     }
+};
 
-    success(message, details = null) {
-        const logMessage = this.formatMessage('SUCCESS', message, details);
-        fs.appendFileSync(this.successLogPath, logMessage);
-        fs.appendFileSync(this.combinedLogPath, logMessage);
-        console.log('\x1b[32m%s\x1b[0m', message); // Green color
-    }
-
-    error(message, error = null) {
-        const details = error ? {
-            message: error.message,
-            stack: error.stack,
-            ...(error.details || {})
-        } : null;
-        const logMessage = this.formatMessage('ERROR', message, details);
-        fs.appendFileSync(this.errorLogPath, logMessage);
-        fs.appendFileSync(this.combinedLogPath, logMessage);
-        console.error('\x1b[31m%s\x1b[0m', message); // Red color
-    }
-
-    info(message, details = null) {
-        const logMessage = this.formatMessage('INFO', message, details);
-        console.log('Writing log:', logMessage); // Debug line
-        fs.appendFileSync(this.combinedLogPath, logMessage);
-        fs.appendFileSync(this.successLogPath, logMessage);
-        console.log('\x1b[36m%s\x1b[0m', message); // Cyan color
+// Helper function to append logs to data.json
+function appendToLog(logEntry) {
+    try {
+        // Read the current content
+        const fileContent = fs.readFileSync(dataFilePath, 'utf8');
+        const data = JSON.parse(fileContent);
+        
+        // Add the new log entry
+        data.logs.push(logEntry);
+        
+        // Write the entire updated content
+        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error writing to log file:', error);
     }
 }
 
-export default new Logger(); 
+// Handle process termination
+process.on('SIGINT', () => {
+    logStream.end();
+    process.exit();
+});
+
+export default logger; 

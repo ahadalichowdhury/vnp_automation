@@ -2,13 +2,32 @@ import dotenv from 'dotenv'
 import express from 'express'
 import fs from 'fs'
 import { google } from 'googleapis'
+import http from "http"
 import open from 'open'
+import path from "path"
 import puppeteer from 'puppeteer'
+import { Server } from "socket.io"
+import { fileURLToPath } from 'url'
 import xlsx from 'xlsx'
+import logger from './logger.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 dotenv.config()
 
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+})
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')))
+
 const port = 3000
 
 const CLIENT_ID = process.env.CLIENT_ID
@@ -45,26 +64,26 @@ async function getVerificationCode() {
     const res = await gmail.users.messages.list({ userId: 'me', maxResults: 5 })
 
     if (!res.data.messages) {
-      console.log('No new emails found.')
+      logger.info('No new emails found.')
       return null
     }
 
     for (const msg of res.data.messages) {
       const email = await gmail.users.messages.get({ userId: 'me', id: msg.id })
       const body = email.data.snippet
-      console.log('Email body:', body)
+      logger.info('Email body:', body)
       const codeMatch = body.match(/\b\d{6,10}\b/)
-      console.log('Code match:', codeMatch)
+      logger.info('Code match:', codeMatch)
 
       if (codeMatch) {
         return codeMatch[0]
       }
     }
 
-    console.log('No verification code found in recent emails.')
+    logger.info('No verification code found in recent emails.')
     return null
   } catch (error) {
-    console.error('Error fetching emails:', error.message)
+    logger.error('Error fetching emails:', error.message)
     return null
   }
 }
@@ -135,8 +154,8 @@ async function setDateRange(page, start_date, end_date) {
     const expectedFromDateWithoutZeros = formatDateWithoutZeros(start_date)
     const expectedToDateWithoutZeros = formatDateWithoutZeros(end_date)
 
-    console.log('Converting from date:', start_date, 'to:', expectedFromDateWithZeros)
-    console.log('Converting to date:', end_date, 'to:', expectedToDateWithZeros)
+    logger.info('Converting from date:', start_date, 'to:', expectedFromDateWithZeros)
+    logger.info('Converting to date:', end_date, 'to:', expectedToDateWithZeros)
 
     // Click the From date input to open calendar
     const fromDateInput = await page.$('.from-input-label input.fds-field-input')
@@ -145,16 +164,16 @@ async function setDateRange(page, start_date, end_date) {
 
     // Step 1: Get current year and month from first calendar
     const firstMonthHeader = await page.$eval('.first-month h2', el => el.textContent.trim())
-    console.log('First month header:', firstMonthHeader)
+    logger.info('First month header:', firstMonthHeader)
     const [currentMonth, currentYear] = firstMonthHeader.split(' ')
-    console.log('Current month:', currentMonth)
-    console.log('Current year:', currentYear)
+    logger.info('Current month:', currentMonth)
+    logger.info('Current year:', currentYear)
     const targetDate = new Date(start_date)
     const targetYear = targetDate.getFullYear()
     const targetMonth = targetDate.toLocaleString('en-US', { month: 'long' })
-    console.log('Target month:', targetMonth)
-    console.log('Target year:', targetYear)
-    console.log('Target Date:', targetDate)
+    logger.info('Target month:', targetMonth)
+    logger.info('Target year:', targetYear)
+    logger.info('Target Date:', targetDate)
     // Validate year
     if (targetYear > parseInt(currentYear)) {
       throw new Error('Target year is greater than current year')
@@ -173,7 +192,7 @@ async function setDateRange(page, start_date, end_date) {
       }
     )
     
-    console.log('Total months to navigate (start):', totalMonthsToNavigate)
+    logger.info('Total months to navigate (start):', totalMonthsToNavigate)
 
     // Navigate months for start date
     const navigationButtons = await page.$$('.fds-datepicker-navigation button')
@@ -209,17 +228,17 @@ async function setDateRange(page, start_date, end_date) {
     await page.waitForSelector('.second-month h2', { visible: true })
     
     const secondMonthHeader = await page.$eval('.second-month h2', el => el.textContent.trim())
-    console.log('Second month header:', secondMonthHeader)
+    logger.info('Second month header:', secondMonthHeader)
 
     const [endCurrentMonth, endCurrentYear] = secondMonthHeader.split(' ')
-    console.log('End current month:', endCurrentMonth)
-    console.log('End current year:', endCurrentYear)
+    logger.info('End current month:', endCurrentMonth)
+    logger.info('End current year:', endCurrentYear)
     const endDate = new Date(end_date)
     const endTargetYear = endDate.getFullYear()
     const endTargetMonth = endDate.toLocaleString('en-US', { month: 'long' })
-    console.log('End target month:', endTargetMonth)
-    console.log('End target year:', endTargetYear)
-    console.log('End Date:', endDate)
+    logger.info('End target month:', endTargetMonth)
+    logger.info('End target year:', endTargetYear)
+    logger.info('End Date:', endDate)
 
     // Calculate months to navigate for end date
     const endTotalMonthsToNavigate = calculateMonthsToNavigate(
@@ -234,7 +253,7 @@ async function setDateRange(page, start_date, end_date) {
       }
     )
     
-    console.log('Total end months to navigate:', endTotalMonthsToNavigate)
+    logger.info('Total end months to navigate:', endTotalMonthsToNavigate)
 
     // Make sure navigation buttons are visible
     await page.waitForSelector('.fds-datepicker-navigation button', { visible: true })
@@ -280,19 +299,19 @@ async function setDateRange(page, start_date, end_date) {
     const fromValue = await page.$eval('.from-input-label input.fds-field-input', el => el.value)
     const toValue = await page.$eval('.to-input-label input.fds-field-input', el => el.value)
 
-    console.log('Expected from date (with zeros):', expectedFromDateWithZeros)
-    console.log('Expected from date (without zeros):', expectedFromDateWithoutZeros)
-    console.log('Actual from date:', fromValue)
-    console.log('Expected to date (with zeros):', expectedToDateWithZeros)
-    console.log('Expected to date (without zeros):', expectedToDateWithoutZeros)
-    console.log('Actual to date:', toValue)
+    logger.info('Expected from date (with zeros):', expectedFromDateWithZeros)
+    logger.info('Expected from date (without zeros):', expectedFromDateWithoutZeros)
+    logger.info('Actual from date:', fromValue)
+    logger.info('Expected to date (with zeros):', expectedToDateWithZeros)
+    logger.info('Expected to date (without zeros):', expectedToDateWithoutZeros)
+    logger.info('Actual to date:', toValue)
 
     // Compare with expected dates, accepting either format
     const fromMatches = fromValue === expectedFromDateWithZeros || fromValue === expectedFromDateWithoutZeros
     const toMatches = toValue === expectedToDateWithZeros || toValue === expectedToDateWithoutZeros
 
     if (!fromMatches || !toMatches) {
-      console.log('Date mismatch detected, attempting final correction...')
+      logger.info('Date mismatch detected, attempting final correction...')
       await page.evaluate((dates) => {
         const [startDateStr, endDateStr] = dates
         const [startMonth, startDay, startYear] = startDateStr.split('/')
@@ -327,7 +346,7 @@ async function setDateRange(page, start_date, end_date) {
 
     return { from: fromValue, to: toValue }
   } catch (error) {
-    console.error('Error setting date range:', error)
+    logger.error('Error setting date range:', error)
     throw error
   }
 }
@@ -360,7 +379,7 @@ async function loginToExpediaPartner(
     await page.setDefaultTimeout(60000)
 
     // Navigate to partner central
-    console.log('Navigating to Expedia Partner Central...')
+    logger.info('Navigating to Expedia Partner Central...')
     await page.goto(
       'https://www.expediapartnercentral.com/Account/Logon?signedOff=true',
       {
@@ -369,7 +388,7 @@ async function loginToExpediaPartner(
       }
     )
 
-    console.log('Waiting for page load...')
+    logger.info('Waiting for page load...')
 
     await delay(randomDelay())
 
@@ -385,7 +404,7 @@ async function loginToExpediaPartner(
     await page.click("#continueButton")
     
     // Wait before entering password
-    console.log('Waiting for password page to load...')
+    logger.info('Waiting for password page to load...')
 
     // Wait for password page to be fully loaded
     try {
@@ -404,7 +423,7 @@ async function loginToExpediaPartner(
       // Additional wait to ensure page is fully loaded
       await delay(4000)
 
-      console.log('Password page loaded, entering password...')
+      logger.info('Password page loaded, entering password...')
       
       // Type password slowly
       for (let char of password) {
@@ -419,19 +438,19 @@ async function loginToExpediaPartner(
       await page.click('#signInButton')
 
     } catch (error) {
-      console.log('Error during password entry:', error.message)
+      logger.info('Error during password entry:', error.message)
       throw error
     }
 
     // Wait for verification code page using the correct selector
-    console.log('Waiting for verification page...')
+    logger.info('Waiting for verification page...')
     await page.waitForSelector('input[name="passcode-input"]', {
       visible: true,
       timeout: 60000,
     })
 
     // Add delay before fetching verification code
-    console.log('Waiting for verification email...')
+    logger.info('Waiting for verification email...')
     await delay(15000) // Wait 15 seconds for email to arrive
 
     // Get verification code
@@ -439,7 +458,7 @@ async function loginToExpediaPartner(
     if (!code) {
       throw new Error('Failed to get verification code from email')
     }
-    console.log('Got verification code:', code)
+    logger.info('Got verification code:', code)
 
     // Enter verification code using the correct selector
     await page.type('input[name="passcode-input"]', code, { delay: 100 })
@@ -482,7 +501,7 @@ async function loginToExpediaPartner(
 
     // Click the button
     await verifyButtonHandle.click()
-    console.log('Clicked the verify button successfully!')
+    logger.info('Clicked the verify button successfully!')
 
     // Wait for successful login
     await page.waitForNavigation({
@@ -490,7 +509,7 @@ async function loginToExpediaPartner(
       timeout: 60000,
     })
 
-    console.log('Login successful!')
+    logger.info('Login successful!')
 
     // Wait for property table to load
     await page.waitForSelector('.fds-data-table-wrapper', {
@@ -502,7 +521,7 @@ async function loginToExpediaPartner(
     await page.waitForSelector('.all-properties__search input.fds-field-input')
 
     // Get property name from query params
-    console.log(`Searching for property: ${propertyName}`)
+    logger.info(`Searching for property: ${propertyName}`)
 
     // Type property name in search
     await page.type('.all-properties__search input.fds-field-input', propertyName, { delay: 100 })
@@ -529,7 +548,7 @@ async function loginToExpediaPartner(
       if (propertyLink) {
         // Get the text to verify it's the right property
         const linkText = await page.evaluate(el => el.textContent, propertyLink)
-        console.log(`Found property: ${linkText}, clicking...`)
+        logger.info(`Found property: ${linkText}, clicking...`)
         
         try {
           // Click the link and wait for navigation
@@ -542,7 +561,7 @@ async function loginToExpediaPartner(
           await delay(8000)
 
           // Find and click the Reservations link
-          console.log('Looking for Reservations link...')
+          logger.info('Looking for Reservations link...')
           
           try {
             // Wait for the drawer content to load
@@ -582,17 +601,17 @@ async function loginToExpediaPartner(
               delay(5000)
             ])
 
-            console.log('Successfully navigated to Reservations page')
+            logger.info('Successfully navigated to Reservations page')
 
             // Wait for date filters to be visible
-            console.log('Waiting for date filters...')
+            logger.info('Waiting for date filters...')
             await page.waitForSelector(
               'input[type="radio"][name="dateTypeFilter"]',
               { visible: true, timeout: 30000 }
             )
 
             // Click the "Checking out" radio button
-            console.log('Selecting "Checking out" filter...')
+            logger.info('Selecting "Checking out" filter...')
             await page.evaluate(() => {
               const radioButtons = Array.from(document.querySelectorAll('input[type="radio"][name="dateTypeFilter"]'))
               const checkingOutButton = radioButtons.find(radio => 
@@ -618,7 +637,7 @@ async function loginToExpediaPartner(
                 }
               })
 
-              console.log('Set dates:', dateValues)
+              logger.info('Set dates:', dateValues)
               
               // Find and click the Apply button
               try {
@@ -638,13 +657,13 @@ async function loginToExpediaPartner(
                   throw new Error('Apply button not found')
                 })
 
-                console.log('Clicked Apply button, waiting for data to load...')
+                logger.info('Clicked Apply button, waiting for data to load...')
                 
                 // Wait for the loading indicator to appear
                 await page.waitForSelector('td .fds-loader.is-loading.is-visible', {
                   visible: true,
                   timeout: 10000
-                }).catch(() => console.log('Loading indicator did not appear'))
+                }).catch(() => logger.info('Loading indicator did not appear'))
 
                 // Wait for the loading indicator to disappear
                 await page.waitForSelector('td .fds-loader.is-loading.is-visible', {
@@ -652,10 +671,10 @@ async function loginToExpediaPartner(
                   timeout: 30000
                 })
 
-                console.log('Loading completed, continuing with data processing...')
+                logger.info('Loading completed, continuing with data processing...')
 
                 // Then continue with your existing code for processing the data...
-                console.log('Starting to process reservation data...')
+                logger.info('Starting to process reservation data...')
 
                 // Wait for the table to be visible
                 await page.waitForSelector('table.fds-data-table', {
@@ -675,10 +694,10 @@ async function loginToExpediaPartner(
                     return document.querySelectorAll('td.guestName button.guestNameLink').length
                   })
                   
-                  console.log(`Found ${currentCount} reservations on attempt ${attempts + 1}...`)
+                  logger.info(`Found ${currentCount} reservations on attempt ${attempts + 1}...`)
                   
                   if (currentCount === previousCount && currentCount > 0) {
-                    console.log('Data count stabilized')
+                    logger.info('Data count stabilized')
                     break
                   }
                   
@@ -691,19 +710,19 @@ async function loginToExpediaPartner(
                   return document.querySelectorAll('td.guestName button.guestNameLink').length
                 })
                 
-                console.log(`Final reservation count: ${finalCount}`)
+                logger.info(`Final reservation count: ${finalCount}`)
                 
                 if (finalCount === 0) {
                   throw new Error('No reservations found after multiple attempts')
                 }
 
               } catch (error) {
-                console.log('Error with Apply button:', error.message)
+                logger.info('Error with Apply button:', error.message)
                 throw error
               }
 
               // After date range is applied and before scraping data
-              console.log('Setting results per page to 100...')
+              logger.info('Setting results per page to 100...')
               await page.waitForSelector('.fds-pagination-selector select')
               await page.click('.fds-pagination-selector select')
               await page.select('.fds-pagination-selector select', '100')
@@ -735,14 +754,14 @@ async function loginToExpediaPartner(
               }
 
               const totalResults = await getTotalResults()
-              console.log(`Total reservations to fetch: ${totalResults}`)
+              logger.info(`Total reservations to fetch: ${totalResults}`)
 
               let currentPage = 1
               let hasMore = true
 
               while (hasMore) {
                 try {
-                  console.log(`Processing page ${currentPage}...`)
+                  logger.info(`Processing page ${currentPage}...`)
                   
                   // Wait for table data to load
                   await page.waitForSelector('table.fds-data-table tbody tr', {
@@ -772,7 +791,7 @@ async function loginToExpediaPartner(
 
                       // Check if we've already processed this reservation
                       if (processedReservationIds.has(basicData.reservationId)) {
-                        console.log(`Skipping duplicate reservation: ${basicData.reservationId}`)
+                        logger.info(`Skipping duplicate reservation: ${basicData.reservationId}`)
                         continue
                       }
 
@@ -795,7 +814,7 @@ async function loginToExpediaPartner(
                           )
                         ])
                       } catch (error) {
-                        console.log('Dialog did not appear within timeout, skipping to next reservation')
+                        logger.info('Dialog did not appear within timeout, skipping to next reservation')
                         continue
                       }
 
@@ -806,7 +825,7 @@ async function loginToExpediaPartner(
                       })
 
                       if (isCanceled) {
-                        console.log('Found canceled reservation, closing dialog...')
+                        logger.info('Found canceled reservation, closing dialog...')
                         try {
                           // Try multiple methods to close the dialog
                           await Promise.race([
@@ -823,7 +842,7 @@ async function loginToExpediaPartner(
                           await delay(1500) // Wait for dialog to close
                           continue // Skip to next reservation
                         } catch (error) {
-                          console.log('Warning: Could not close canceled reservation dialog')
+                          logger.warn('Warning: Could not close canceled reservation dialog')
                           continue
                         }
                       }
@@ -901,7 +920,7 @@ async function loginToExpediaPartner(
                         await page.click('.fds-dialog-header button.dialog-close')
                         await delay(1500)
                       } catch (e) {
-                        console.log('Warning: Could not close dialog normally')
+                        logger.warn('Warning: Could not close dialog normally')
                       }
 
                       // Add to reservations array with either card data or payment data
@@ -914,7 +933,7 @@ async function loginToExpediaPartner(
                       })
 
                     } catch (error) {
-                      console.log(`Error processing reservation: ${error.message}`)
+                      logger.info(`Error processing reservation: ${error.message}`)
                       if (basicData) {
                         allReservations.push({
                           ...basicData,
@@ -926,7 +945,7 @@ async function loginToExpediaPartner(
                     }
                   }
 
-                  console.log(`Processed ${allReservations.length} of ${totalResults} reservations`)
+                  logger.info(`Processed ${allReservations.length} of ${totalResults} reservations`)
 
                   // Check if there's a next page
                   hasMore = await hasNextPage()
@@ -937,18 +956,18 @@ async function loginToExpediaPartner(
                   }
 
                 } catch (pageError) {
-                  console.log(`Error processing page ${currentPage}: ${pageError.message}`)
+                  logger.info(`Error processing page ${currentPage}: ${pageError.message}`)
                   // Try to recover by reloading the page
                   await page.reload({ waitUntil: 'networkidle0' })
                   await delay(5000)
                 }
               }
 
-              console.log(`Found total ${allReservations.length} reservations`)
+              logger.info(`Found total ${allReservations.length} reservations`)
 
               // At the end, verify we have unique reservations
-              console.log(`Total unique reservations: ${allReservations.length}`)
-              console.log(`Total processed IDs: ${processedReservationIds.size}`)
+              logger.info(`Total unique reservations: ${allReservations.length}`)
+              logger.info(`Total processed IDs: ${processedReservationIds.size}`)
 
               // Get current date and time for filename
               const now = new Date()
@@ -1000,33 +1019,33 @@ async function loginToExpediaPartner(
               const ws = xlsx.utils.aoa_to_sheet(wsData)
               xlsx.utils.book_append_sheet(workbook, ws, 'Reservations')
               xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`)
-              console.log(`Saved reservation data to reservations_${timestamp}.xlsx`)
+              logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`)
 
               // Close the browser
               // await browser.close()
               return allReservations
             }
 
-            console.log('No reservation data found after multiple retries')
+            logger.info('No reservation data found after multiple retries')
             if (browser) await browser.close()
             return []
           } catch (error) {
-            console.log('Error finding/clicking Reservations:', error.message)
+            logger.error('Error finding/clicking Reservations:', error.message)
             throw error
           }
         } catch (error) {
-          console.log(`Error finding/clicking property: ${error.message}`)
+          logger.error(`Error finding/clicking property: ${error.message}`)
           throw error
         }
       } else {
         throw new Error(`Property "${propertyName}" not found`)
       }
     } catch (error) {
-      console.log(`Error finding/clicking property: ${error.message}`)
+      logger.error(`Error finding/clicking property: ${error.message}`)
       throw error
     }
   } catch (error) {
-    console.error('Error:', error)
+    logger.error('Error:', error)
     if (browser) await browser.close()
     throw error
   }
@@ -1059,6 +1078,37 @@ async function loginToExpediaPartner(
 //   return chunks
 // }
 
+// API endpoint to get logs
+app.get("/api/data", (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "data.json"), "utf8"));
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Error reading logs" });
+  }
+});
+
+// Watch for JSON file changes
+fs.watch(path.join(__dirname, "data.json"), () => {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "data.json"), "utf8"));
+    io.emit("update", data); // Broadcast updates
+  } catch (error) {
+    console.error("Error reading logs:", error);
+  }
+});
+
+// WebSocket connection handling
+io.on("connection", (socket) => {
+  console.log("Client connected");
+
+  fs.readFile(path.join(__dirname, "data.json"), "utf8", (err, data) => {
+    if (!err) socket.emit("update", JSON.parse(data)); // Send initial data
+  });
+
+  socket.on("disconnect", () => console.log("Client disconnected"));
+});
+
 // Express routes
 app.get('/auth', async (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
@@ -1084,34 +1134,6 @@ app.get('/oauth2callback', async (req, res) => {
     res.status(500).send('Error retrieving access token: ' + error.message)
   }
 })
-
-// Utility function to split date range into 3-day chunks
-// function splitDateRange(startDate, endDate) {
-//   const chunks = []
-//   const start = new Date(startDate)
-//   const end = new Date(endDate)
-
-//   let currentStart = new Date(start)
-//   while (currentStart < end) {
-//     let currentEnd = new Date(currentStart)
-//     currentEnd.setDate(currentEnd.getDate() + 2) // Add 2 days to make it a 3-day chunk
-
-//     if (currentEnd > end) {
-//       currentEnd = new Date(end)
-//     }
-
-//     chunks.push({
-//       start: currentStart.toLocaleDateString('en-US'),
-//       end: currentEnd.toLocaleDateString('en-US'),
-//     })
-
-//     currentStart = new Date(currentEnd)
-//     currentStart.setDate(currentStart.getDate() + 1) // Start next chunk from next day
-//   }
-
-//   return chunks
-// }
-
 // Independent API endpoint for Expedia login automation
 app.get('/api/expedia', async (req, res) => {
   const { email, password, start_date, end_date, propertyName } = req.query
@@ -1143,8 +1165,8 @@ app.get('/api/expedia', async (req, res) => {
     const formattedStartDate = convertDateFormat(start_date)
     const formattedEndDate = convertDateFormat(end_date)
 
-    console.log('Original start date:', start_date, '-> Formatted:', formattedStartDate)
-    console.log('Original end date:', end_date, '-> Formatted:', formattedEndDate)
+    logger.info('Original start date:', start_date, '-> Formatted:', formattedStartDate)
+    logger.info('Original end date:', end_date, '-> Formatted:', formattedEndDate)
 
     await loginToExpediaPartner(
       email, 
@@ -1181,10 +1203,10 @@ app.get('/api/expedia', async (req, res) => {
 // })
 
 // Start the Express server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`)
+server.listen(port, () => {
+  logger.info(`Server running at http://localhost:${port}`)
   if (!loadToken()) {
-    console.log('Opening browser for authentication...')
+    logger.info('Opening browser for authentication...')
     open(`http://localhost:${port}/auth`)
   }
 })

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Terminal Logs</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="/socket.io/socket.io.js"></script>
   </head>
   <body style="background: #2d2d2d">
     <div class="terminal-container">
@@ -15,13 +16,7 @@
           <div class="window-control maximize"></div>
         </div>
         <div class="terminal-tabs">
-          <button class="terminal-tab active" data-tab="success">
-            Success Logs
-          </button>
-          <button class="terminal-tab" data-tab="error">Error Logs</button>
-          <button class="terminal-tab" data-tab="combined">
-            Combined Logs
-          </button>
+          <button class="terminal-tab active" data-tab="all">All Logs</button>
         </div>
       </div>
       <div class="terminal-content" id="logContent">
@@ -29,45 +24,36 @@
       </div>
     </div>
     <script>
-      // Function to fetch and display logs
-      async function fetchLogs(type = "success") {
-        try {
-          console.log("Fetching logs for type:", type);
-          const response = await fetch(`/api/logs/${type}`);
+      // Initialize Socket.IO connection with the correct URL
+      const socket = io(window.location.origin);
+      let allLogs = [];
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const logs = await response.json();
-          console.log("Received logs:", logs);
-          displayLogs(logs);
-        } catch (error) {
-          console.error("Error fetching logs:", error);
-          document.getElementById("logContent").innerHTML = `
-                    <div class="log-entry error">
-                        <span class="log-message">Error loading logs: ${error.message}</span>
-                    </div>
-                `;
-        }
-      }
-
-      function displayLogs(logs) {
+      // Function to display logs
+      function displayLogs(logs, filter = "all") {
         const logContent = document.getElementById("logContent");
-        logContent.innerHTML = logs
+
+        // Filter logs based on selected tab
+        const filteredLogs =
+          filter === "all"
+            ? logs
+            : logs.filter((log) => log.level.toLowerCase() === filter);
+
+        logContent.innerHTML = filteredLogs
           .map(
             (log) => `
                 <div class="log-entry">
-                    <span class="log-timestamp">[${log.timestamp}]</span>
-                    <span class="log-level log-level-${log.level}">${
+                    <span class="log-timestamp">[${new Date(
+                      log.timestamp
+                    ).toLocaleString()}]</span>
+                    <span class="log-level log-level-${log.level.toLowerCase()}">${
               log.level
             }</span>
                     <span class="log-message">${log.message}</span>
                     ${
-                      log.details
+                      log.data
                         ? `
                         <div class="log-details">
-                            <pre>${JSON.stringify(log.details, null, 2)}</pre>
+                            <pre>${JSON.stringify(log.data, null, 2)}</pre>
                         </div>
                     `
                         : ""
@@ -76,6 +62,9 @@
             `
           )
           .join("");
+
+        // Scroll to bottom after content is updated
+        logContent.scrollTop = logContent.scrollHeight;
       }
 
       // Tab switching logic
@@ -87,21 +76,44 @@
             .classList.remove("active");
           tab.classList.add("active");
 
-          // Fetch logs for selected tab
-          fetchLogs(tab.dataset.tab);
+          // Display filtered logs
+          displayLogs(allLogs, tab.dataset.tab);
         });
       });
 
-      // Add auto-refresh every 5 seconds
-      setInterval(() => {
+      // Socket.IO event handlers
+      socket.on("connect", () => {
+        console.log("Connected to server");
+        // Fetch initial data
+        fetch("/api/data")
+          .then((response) => response.json())
+          .then((data) => {
+            allLogs = data.logs;
+            displayLogs(allLogs);
+          })
+          .catch((error) =>
+            console.error("Error fetching initial data:", error)
+          );
+      });
+
+      socket.on("update", (data) => {
+        allLogs = data.logs;
         const activeTab = document.querySelector(".terminal-tab.active");
-        if (activeTab) {
-          fetchLogs(activeTab.dataset.tab);
-        }
-      }, 5000);
+        displayLogs(allLogs, activeTab.dataset.tab);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected from server");
+      });
 
       // Initial load
-      fetchLogs("success");
+      fetch("http://localhost:3000/api/data")
+        .then((response) => response.json())
+        .then((data) => {
+          allLogs = data.logs;
+          displayLogs(allLogs);
+        })
+        .catch((error) => console.error("Error fetching initial data:", error));
     </script>
   </body>
 </html>
