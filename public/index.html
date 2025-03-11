@@ -29,6 +29,9 @@
       const socket = io(window.location.origin);
       let allLogs = [];
 
+      document.getElementById("start-button").addEventListener("click", () => {
+        socket.emit("start");
+      });
       // Function to display logs
       function displayLogs(logs, filter = "all") {
         const logContent = document.getElementById("logContent");
