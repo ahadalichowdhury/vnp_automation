@@ -527,9 +527,9 @@ async function loginToExpediaPartner(
       // }).catch(() => console.log('No loading indicator found'))
 
       // Wait for password field to be visible and ready
-      await page.waitForSelector("#passwordControl", {
+      await page.waitForSelector("#password-input", {
         visible: true,
-        timeout: 10000,
+        timeout: 60000,
       });
 
       // Additional wait to ensure page is fully loaded
@@ -539,7 +539,7 @@ async function loginToExpediaPartner(
 
       // Type password slowly
       for (let char of password) {
-        await page.type("#passwordControl", char, { delay: 100 });
+        await page.type("#password-input", char, { delay: 100 });
         await delay(50); // Extra small delay between characters
       }
 
@@ -547,7 +547,7 @@ async function loginToExpediaPartner(
       await delay(5000);
 
       // Click the login button
-      await page.click("#signInButton");
+      await page.click("#password-continue");
     } catch (error) {
       logger.info("Error during password entry:", error.message);
       throw error;
