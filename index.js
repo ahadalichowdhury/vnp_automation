@@ -1381,7 +1381,9 @@ async function loginToExpediaPartner(
                   hasCardInfo: !!cardData,
                   hasPaymentInfo: !!paymentData,
                   remainingAmountToCharge: remainingAmountToCharge || "N/A",
-                  amountToRefund: amountToRefund || "N/A"
+                  amountToRefund: amountToRefund || "N/A",
+                  amountToChargeOrRefund: remainingAmountToCharge || amountToRefund || "N/A",
+                  reasonOfCharge: remainingAmountToCharge ? "Remaining Amount to Charge" : (amountToRefund ? "Amount to Refund" : "N/A")
                 });
               } catch (error) {
                 logger.info(`Error processing reservation: ${error.message}`);
@@ -1392,7 +1394,9 @@ async function loginToExpediaPartner(
                     expiryDate: "N/A",
                     cvv: "N/A",
                     remainingAmountToCharge: "N/A",
-                    amountToRefund: "N/A"
+                    amountToRefund: "N/A",
+                    amountToChargeOrRefund: "N/A",
+                    reasonOfCharge: "N/A"
                   });
                 }
               }
@@ -1449,8 +1453,8 @@ async function loginToExpediaPartner(
             "Total Guest Payment",
             "Expedia Compensation",
             "Total Payout",
-            "Remaining Amount to Charge",
-            "Amount to Refund",
+            "Amount to charge/refund",
+            "Reason of charge",
             "Status",
           ],
           ...allReservations.map((res) => [
@@ -1470,8 +1474,8 @@ async function loginToExpediaPartner(
             res.totalGuestPayment || "N/A",
             res.expediaCompensation || "N/A",
             res.totalPayout || "N/A",
-            res.remainingAmountToCharge || "N/A",
-            res.amountToRefund || "N/A",
+            res.amountToChargeOrRefund || "N/A",
+            res.reasonOfCharge || "N/A",
             res.status || "Active",
           ]),
         ];

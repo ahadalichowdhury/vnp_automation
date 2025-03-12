@@ -7083,6 +7083,552 @@
       "level": "INFO",
       "message": "Saved reservation data to reservations_2025-03-12T07-36-37-667Z.xlsx",
       "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:12:18.040Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:13:46.581Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:13:46.585Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:13:48.149Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:13:58.743Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:02.513Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:02.515Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:13.213Z",
+      "level": "INFO",
+      "message": "Password page fully loaded, entering password...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:16.891Z",
+      "level": "INFO",
+      "message": "Password entered, waiting before clicking submit...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:21.895Z",
+      "level": "INFO",
+      "message": "Clicking password continue button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:21.921Z",
+      "level": "INFO",
+      "message": "Waiting for verification page...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:28.050Z",
+      "level": "INFO",
+      "message": "Waiting for verification email...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:48.619Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:48.623Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:48.626Z",
+      "level": "INFO",
+      "message": "Got verification code:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:14:51.515Z",
+      "level": "INFO",
+      "message": "Clicked the verify button successfully!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:10.320Z",
+      "level": "INFO",
+      "message": "Login successful!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:10.326Z",
+      "level": "INFO",
+      "message": "Looking for Reservations link...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:25.576Z",
+      "level": "INFO",
+      "message": "Successfully navigated to Reservations page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:25.579Z",
+      "level": "INFO",
+      "message": "Waiting for date filters...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:39.515Z",
+      "level": "INFO",
+      "message": "Selecting \"Checking out\" filter...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:41.523Z",
+      "level": "INFO",
+      "message": "Converting from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:41.530Z",
+      "level": "INFO",
+      "message": "Converting to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.562Z",
+      "level": "INFO",
+      "message": "First month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.565Z",
+      "level": "INFO",
+      "message": "Current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.566Z",
+      "level": "INFO",
+      "message": "Current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.603Z",
+      "level": "INFO",
+      "message": "Target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.604Z",
+      "level": "INFO",
+      "message": "Target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.605Z",
+      "level": "INFO",
+      "message": "Target Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:42.606Z",
+      "level": "INFO",
+      "message": "Total months to navigate (start):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.106Z",
+      "level": "INFO",
+      "message": "Second month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.108Z",
+      "level": "INFO",
+      "message": "End current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.109Z",
+      "level": "INFO",
+      "message": "End current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.110Z",
+      "level": "INFO",
+      "message": "End target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.111Z",
+      "level": "INFO",
+      "message": "End target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.112Z",
+      "level": "INFO",
+      "message": "End Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:45.113Z",
+      "level": "INFO",
+      "message": "Total end months to navigate:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.395Z",
+      "level": "INFO",
+      "message": "Expected from date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.396Z",
+      "level": "INFO",
+      "message": "Expected from date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.397Z",
+      "level": "INFO",
+      "message": "Actual from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.398Z",
+      "level": "INFO",
+      "message": "Expected to date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.399Z",
+      "level": "INFO",
+      "message": "Expected to date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.400Z",
+      "level": "INFO",
+      "message": "Actual to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.403Z",
+      "level": "INFO",
+      "message": "Set dates:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.405Z",
+      "level": "INFO",
+      "message": "Waiting for the More filters button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.417Z",
+      "level": "INFO",
+      "message": "Clicked More filters button, waiting for dropdown to appear...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:47.432Z",
+      "level": "INFO",
+      "message": "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:48.507Z",
+      "level": "INFO",
+      "message": "Applied filters from dropdown",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:50.510Z",
+      "level": "INFO",
+      "message": "Clicked Apply button, waiting for data to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:51.646Z",
+      "level": "INFO",
+      "message": "Loading completed, continuing with data processing...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:51.648Z",
+      "level": "INFO",
+      "message": "Starting to process reservation data...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:53.685Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:55.694Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 2...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:55.698Z",
+      "level": "INFO",
+      "message": "Data count stabilized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:55.702Z",
+      "level": "INFO",
+      "message": "Final reservation count: 10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:55.703Z",
+      "level": "INFO",
+      "message": "Setting results per page to 100...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:58.866Z",
+      "level": "INFO",
+      "message": "Total reservations to fetch: 39",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:15:58.868Z",
+      "level": "INFO",
+      "message": "Processing page 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:00.980Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:02.713Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:04.427Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:17.543Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:23.274Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 0.03",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:28.997Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:34.710Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 56.07",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:40.425Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 56.07",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:42.140Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:47.875Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.04",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:16:53.610Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.01",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:17:14.707Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:17:18.804Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 69.72",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:17:35.998Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.06",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:17:57.077Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:06.923Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 59.82",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:12.664Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 59.78",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:18.384Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 31.10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:24.109Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 49.85",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:29.829Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 49.85",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:35.566Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 49.85",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:45.222Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:45.303Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:18:51.079Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:06.439Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:16.281Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.04",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:22.009Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.04",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:27.724Z",
+      "level": "INFO",
+      "message": "Found Amount to refund: 0.04",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:29.358Z",
+      "level": "INFO",
+      "message": "Processed 29 of 39 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:29.368Z",
+      "level": "INFO",
+      "message": "Found total 29 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:29.369Z",
+      "level": "INFO",
+      "message": "Total unique reservations: 29",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:29.370Z",
+      "level": "INFO",
+      "message": "Total processed IDs: 39",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-12T11:19:29.381Z",
+      "level": "INFO",
+      "message": "Saved reservation data to reservations_2025-03-12T11-19-29-371Z.xlsx",
+      "data": null
     }
   ]
 }
