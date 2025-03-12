@@ -504,6 +504,7 @@ async function loginToExpediaPartner(
 
     await delay(randomDelay());
 
+
     // Wait for email input
     await page.waitForSelector("#emailControl");
 
@@ -520,34 +521,76 @@ async function loginToExpediaPartner(
 
     // Wait for password page to be fully loaded
     try {
-      // Wait for the loading indicator to disappear (if any)
-      // await page.waitForSelector('.loading-indicator', {
-      //   hidden: true,
-      //   timeout: 5000
-      // }).catch(() => console.log('No loading indicator found'))
-
-      // Wait for password field to be visible and ready
-      await page.waitForSelector("#password-input", {
+      logger.info("Waiting for password page to fully load...");
+      
+      // First wait for the password field to appear in the DOM
+      await page.waitForSelector("#password-input", { 
         visible: true,
-        timeout: 60000,
+        timeout: 60000 
       });
-
-      // Additional wait to ensure page is fully loaded
-      await delay(4000);
-
-      logger.info("Password page loaded, entering password...");
-
-      // Type password slowly
-      for (let char of password) {
-        await page.type("#password-input", char, { delay: 100 });
-        await delay(50); // Extra small delay between characters
+      
+      // Add a significant delay to ensure the page is fully loaded and stable
+      await delay(3000);
+      
+      // Verify the password field is actually ready for input
+      const isInputReady = await page.evaluate(() => {
+        const input = document.querySelector("#password-input");
+        return input && !input.disabled && document.activeElement !== input;
+      });
+      
+      if (!isInputReady) {
+        logger.info("Password input not fully ready, waiting longer...");
+        await delay(2000);
       }
-
-      // Wait a moment before clicking submit
+      
+      // Click on the password field first to ensure focus
+      await page.click("#password-input");
+      await delay(1000);
+      
+      // Clear the field in case there's any text
+      await page.evaluate(() => {
+        document.querySelector("#password-input").value = "";
+      });
+      await delay(500);
+      
+      logger.info("Password page fully loaded, entering password...");
+      
+      // Type password slowly with increased delays
+      for (let char of password) {
+        await page.type("#password-input", char, { delay: 150 }); // Increased delay
+        await delay(100); // Increased delay between characters
+      }
+      
+      // Wait longer before clicking submit to ensure password is fully entered
+      logger.info("Password entered, waiting before clicking submit...");
       await delay(5000);
-
+      
+      // Verify password was entered correctly
+      const enteredPassword = await page.evaluate(() => {
+        return document.querySelector("#password-input").value;
+      });
+      
+      if (enteredPassword.length !== password.length) {
+        logger.warn(`Password entry issue: expected ${password.length} chars but got ${enteredPassword.length}`);
+        
+        // Re-enter password if needed
+        await page.evaluate(() => {
+          document.querySelector("#password-input").value = "";
+        });
+        await delay(1000);
+        
+        // Try again with even slower typing
+        for (let char of password) {
+          await page.type("#password-input", char, { delay: 200 });
+          await delay(150);
+        }
+        await delay(2000);
+      }
+      
       // Click the login button
+      logger.info("Clicking password continue button...");
       await page.click("#password-continue");
+
     } catch (error) {
       logger.info("Error during password entry:", error.message);
       throw error;
@@ -693,600 +736,764 @@ async function loginToExpediaPartner(
         throw error;
       }
     }
-      // Find and click the Reservations link
-      logger.info("Looking for Reservations link...");
+    // Find and click the Reservations link
+    logger.info("Looking for Reservations link...");
 
-      try {
-        // Wait for the drawer content to load
-        await page.waitForSelector(".uitk-drawer-content", {
-          visible: true,
-          timeout: 30000,
+    try {
+      // Wait for the drawer content to load
+      await page.waitForSelector(".uitk-drawer-content", {
+        visible: true,
+        timeout: 30000,
+      });
+
+      // Click using JavaScript with the exact structure
+      const clicked = await page.evaluate(() => {
+        const reservationsItem = Array.from(
+          document.querySelectorAll(".uitk-action-list-item-content")
+        ).find((item) => {
+          const textDiv = item.querySelector(".uitk-text.overflow-wrap");
+          return textDiv && textDiv.textContent.trim() === "Reservations";
         });
 
-        // Click using JavaScript with the exact structure
-        const clicked = await page.evaluate(() => {
-          const reservationsItem = Array.from(
-            document.querySelectorAll(".uitk-action-list-item-content")
-          ).find((item) => {
-            const textDiv = item.querySelector(".uitk-text.overflow-wrap");
-            return textDiv && textDiv.textContent.trim() === "Reservations";
-          });
-
-          if (reservationsItem) {
-            const link = reservationsItem.querySelector(
-              "a.uitk-action-list-item-link"
-            );
-            if (link) {
-              link.click();
-              return true;
-            }
+        if (reservationsItem) {
+          const link = reservationsItem.querySelector(
+            "a.uitk-action-list-item-link"
+          );
+          if (link) {
+            link.click();
+            return true;
           }
-          return false;
+        }
+        return false;
+      });
+
+      if (!clicked) {
+        throw new Error("Could not find or click Reservations link");
+      }
+
+      // Wait for navigation to complete
+      await Promise.all([
+        page.waitForNavigation({
+          waitUntil: "networkidle0",
+          timeout: 30000,
+        }),
+        delay(5000),
+      ]);
+
+      logger.info("Successfully navigated to Reservations page");
+
+      // Wait for date filters to be visible
+      logger.info("Waiting for date filters...");
+      await page.waitForSelector('input[type="radio"][name="dateTypeFilter"]', {
+        visible: true,
+        timeout: 30000,
+      });
+
+      // Click the "Checking out" radio button
+      logger.info('Selecting "Checking out" filter...');
+      await page.evaluate(() => {
+        const radioButtons = Array.from(
+          document.querySelectorAll(
+            'input[type="radio"][name="dateTypeFilter"]'
+          )
+        );
+        const checkingOutButton = radioButtons.find(
+          (radio) =>
+            radio.parentElement
+              .querySelector(".fds-switch-label")
+              .textContent.trim() === "Checking out"
+        );
+        if (checkingOutButton) {
+          checkingOutButton.click();
+        }
+      });
+
+      // Wait for radio button click to take effect
+      await delay(2000);
+
+      // If start_date and end_date are provided, set the date range
+      if (start_date && end_date) {
+        await setDateRange(page, start_date, end_date);
+
+        // Verify the dates were set correctly
+        const dateValues = await page.evaluate(() => {
+          return {
+            from: document.querySelector(
+              ".from-input-label input.fds-field-input"
+            ).value,
+            to: document.querySelector(".to-input-label input.fds-field-input")
+              .value,
+          };
         });
 
-        if (!clicked) {
-          throw new Error("Could not find or click Reservations link");
-        }
+        logger.info("Set dates:", dateValues);
 
-        // Wait for navigation to complete
-        await Promise.all([
-          page.waitForNavigation({
-            waitUntil: "networkidle0",
-            timeout: 30000,
-          }),
-          delay(5000),
-        ]);
+        //////////////////////////////////////////////////////////////
+        //more filter button
+        //////////////////////////////////////////////////////////////
 
-        logger.info("Successfully navigated to Reservations page");
 
-        // Wait for date filters to be visible
-        logger.info("Waiting for date filters...");
+        //wait for the more filter button
+        logger.info("Waiting for the More filters button...");
         await page.waitForSelector(
-          'input[type="radio"][name="dateTypeFilter"]',
-          { visible: true, timeout: 30000 }
+          "button.fds-button2.utility.fds-dropdown-trigger",
+          {
+            visible: true,
+            timeout: 10000,
+          }
         );
 
-        // Click the "Checking out" radio button
-        logger.info('Selecting "Checking out" filter...');
+        // Click the More filters button
         await page.evaluate(() => {
-          const radioButtons = Array.from(
+          const moreFiltersButton = Array.from(
             document.querySelectorAll(
-              'input[type="radio"][name="dateTypeFilter"]'
+              "button.fds-button2.utility.fds-dropdown-trigger"
             )
+          ).find((button) => {
+            const label = button.querySelector(".fds-button2-label");
+            return label && label.textContent.trim() === "More filters";
+          });
+
+          if (moreFiltersButton) {
+            moreFiltersButton.click();
+            return true;
+          }
+          throw new Error("More filters button not found");
+        });
+
+        logger.info(
+          "Clicked More filters button, waiting for dropdown to appear..."
+        );
+
+        // Wait for the dropdown content to appear
+        // await page.waitForSelector(".fds-dropdown-content", {
+        //   visible: true,
+        //   timeout: 10000,
+        // });
+
+        // logger.info("More filters dropdown appeared successfully");
+
+        // Check the "Expedia Collect Payments" and "Expedia Virtual Card" checkboxes
+        await page.evaluate(() => {
+          // Find all checkbox labels
+          const checkboxLabels = Array.from(
+            document.querySelectorAll(".fds-switch-checkbox")
           );
-          const checkingOutButton = radioButtons.find(
-            (radio) =>
-              radio.parentElement
-                .querySelector(".fds-switch-label")
-                .textContent.trim() === "Checking out"
+
+          // Find and click the "Expedia Collect Payments" checkbox
+          const expediaCollectPaymentsLabel = checkboxLabels.find(
+            (label) =>
+              label.querySelector(".fds-switch-label") &&
+              label.querySelector(".fds-switch-label").textContent.trim() ===
+                "Expedia Collect Payments"
           );
-          if (checkingOutButton) {
-            checkingOutButton.click();
+
+          if (expediaCollectPaymentsLabel) {
+            const checkbox = expediaCollectPaymentsLabel.querySelector(
+              "input.fds-switch-input"
+            );
+            if (checkbox && !checkbox.checked) {
+              checkbox.click();
+              console.log('Checked "Expedia Collect Payments" checkbox');
+            }
+          } else {
+            console.log('Could not find "Expedia Collect Payments" checkbox');
+          }
+
+          // Find and click the "Expedia Virtual Card" checkbox
+          const expediaVirtualCardLabel = checkboxLabels.find(
+            (label) =>
+              label.querySelector(".fds-switch-label") &&
+              label.querySelector(".fds-switch-label").textContent.trim() ===
+                "Expedia Virtual Card"
+          );
+
+          if (expediaVirtualCardLabel) {
+            const checkbox = expediaVirtualCardLabel.querySelector(
+              "input.fds-switch-input"
+            );
+            if (checkbox && !checkbox.checked) {
+              checkbox.click();
+              console.log('Checked "Expedia Virtual Card" checkbox');
+            }
+          } else {
+            console.log('Could not find "Expedia Virtual Card" checkbox');
           }
         });
 
-        // Wait for radio button click to take effect
-        await delay(2000);
+        logger.info(
+          "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes"
+        );
+        await delay(1000); // Wait for checkboxes to be checked
 
-        // If start_date and end_date are provided, set the date range
-        if (start_date && end_date) {
-          await setDateRange(page, start_date, end_date);
-
-          // Verify the dates were set correctly
-          const dateValues = await page.evaluate(() => {
-            return {
-              from: document.querySelector(
-                ".from-input-label input.fds-field-input"
-              ).value,
-              to: document.querySelector(
-                ".to-input-label input.fds-field-input"
-              ).value,
-            };
+        // Click the Apply button in the dropdown
+        await page.evaluate(() => {
+          const filterApplyButton = Array.from(
+            document.querySelectorAll(
+              ".fds-dropdown-actions button.fds-button2.utility"
+            )
+          ).find((button) => {
+            const label = button.querySelector(".fds-button2-label");
+            return label && label.textContent.trim() === "Apply";
           });
 
-          logger.info("Set dates:", dateValues);
+          if (filterApplyButton) {
+            filterApplyButton.click();
+            return true;
+          }
+        });
 
-          // Find and click the Apply button
-          try {
-            // Wait for the apply button to be visible
-            await page.waitForSelector(
-              ".fds-cell.all-cell-1-4 button.fds-button2.primary",
-              {
-                visible: true,
-                timeout: 10000,
-              }
-            );
+        logger.info("Applied filters from dropdown");
+        await delay(2000);
+        //////////////////////////////////////////////////////////////
+        //more filter button end
+        //////////////////////////////////////////////////////////////
 
-            // Click using more specific selector
-            await page.evaluate(() => {
-              const applyButton = document.querySelector(
-                ".fds-cell.all-cell-1-4 button.fds-button2.primary"
-              );
-              if (applyButton) {
-                applyButton.click();
-                return true;
-              }
-              throw new Error("Apply button not found");
-            });
 
-            logger.info("Clicked Apply button, waiting for data to load...");
+        // Find and click the Apply button
+        try {
+          // Wait for the apply button to be visible
+          // await page.waitForSelector(
+          //   ".fds-cell.all-cell-1-4 button.fds-button2.primary",
+          //   {
+          //     visible: true,
+          //     timeout: 10000,
+          //   }
+          // );
 
-            // Wait for the loading indicator to appear
-            await page
-              .waitForSelector("td .fds-loader.is-loading.is-visible", {
-                visible: true,
-                timeout: 10000,
-              })
-              .catch(() => logger.info("Loading indicator did not appear"));
+          // // Click using more specific selector
+          // await page.evaluate(() => {
+          //   const applyButton = document.querySelector(
+          //     ".fds-cell.all-cell-1-4 button.fds-button2.primary"
+          //   );
+          //   if (applyButton) {
+          //     applyButton.click();
+          //     return true;
+          //   }
+          //   throw new Error("Apply button not found");
+          // });
 
-            // Wait for the loading indicator to disappear
-            await page.waitForSelector("td .fds-loader.is-loading.is-visible", {
-              hidden: true,
-              timeout: 30000,
-            });
+          logger.info("Clicked Apply button, waiting for data to load...");
 
-            logger.info(
-              "Loading completed, continuing with data processing..."
-            );
-
-            // Then continue with your existing code for processing the data...
-            logger.info("Starting to process reservation data...");
-
-            // Wait for the table to be visible
-            await page.waitForSelector("table.fds-data-table", {
+          // Wait for the loading indicator to appear
+          await page
+            .waitForSelector("td .fds-loader.is-loading.is-visible", {
               visible: true,
-              timeout: 30000,
-            });
+              timeout: 10000,
+            })
+            .catch(() => logger.info("Loading indicator did not appear"));
 
-            // Wait for data to load and stabilize
-            let previousCount = 0;
-            let attempts = 0;
-            const maxAttempts = 15; // Increased max attempts
+          // Wait for the loading indicator to disappear
+          await page.waitForSelector("td .fds-loader.is-loading.is-visible", {
+            hidden: true,
+            timeout: 30000,
+          });
 
-            while (attempts < maxAttempts) {
-              await delay(2000);
+          logger.info("Loading completed, continuing with data processing...");
 
-              const currentCount = await page.evaluate(() => {
-                return document.querySelectorAll(
-                  "td.guestName button.guestNameLink"
-                ).length;
-              });
+          // Then continue with your existing code for processing the data...
+          logger.info("Starting to process reservation data...");
 
-              logger.info(
-                `Found ${currentCount} reservations on attempt ${
-                  attempts + 1
-                }...`
-              );
+          // Wait for the table to be visible
+          await page.waitForSelector("table.fds-data-table", {
+            visible: true,
+            timeout: 30000,
+          });
 
-              if (currentCount === previousCount && currentCount > 0) {
-                logger.info("Data count stabilized");
-                break;
-              }
+          // Wait for data to load and stabilize
+          let previousCount = 0;
+          let attempts = 0;
+          const maxAttempts = 15; // Increased max attempts
 
-              previousCount = currentCount;
-              attempts++;
-            }
+          while (attempts < maxAttempts) {
+            await delay(2000);
 
-            // Final verification
-            const finalCount = await page.evaluate(() => {
+            const currentCount = await page.evaluate(() => {
               return document.querySelectorAll(
                 "td.guestName button.guestNameLink"
               ).length;
             });
 
-            logger.info(`Final reservation count: ${finalCount}`);
+            logger.info(
+              `Found ${currentCount} reservations on attempt ${attempts + 1}...`
+            );
 
-            if (finalCount === 0) {
-              throw new Error("No reservations found after multiple attempts");
+            if (currentCount === previousCount && currentCount > 0) {
+              logger.info("Data count stabilized");
+              break;
             }
-          } catch (error) {
-            logger.info("Error with Apply button:", error.message);
-            throw error;
+
+            previousCount = currentCount;
+            attempts++;
           }
 
-          // After date range is applied and before scraping data
-          logger.info("Setting results per page to 100...");
-          await page.waitForSelector(".fds-pagination-selector select");
-          await page.click(".fds-pagination-selector select");
-          await page.select(".fds-pagination-selector select", "100");
-
-          // Wait for data to reload with 100 records
-          await delay(3000);
-          await page.waitForSelector("table.fds-data-table tbody tr", {
-            visible: true,
-            timeout: 30000,
+          // Final verification
+          const finalCount = await page.evaluate(() => {
+            return document.querySelectorAll(
+              "td.guestName button.guestNameLink"
+            ).length;
           });
 
-          // Initialize array for all reservations with Set for tracking duplicates
-          const allReservations = [];
-          const processedReservationIds = new Set();
+          logger.info(`Final reservation count: ${finalCount}`);
 
-          // Function to check if there's a next page
-          const hasNextPage = async () => {
-            return await page.evaluate(() => {
-              const nextButton = document.querySelector(
-                ".fds-pagination-button.next button"
-              );
-              return nextButton && !nextButton.disabled;
-            });
-          };
+          if (finalCount === 0) {
+            throw new Error("No reservations found after multiple attempts");
+          }
+        } catch (error) {
+          logger.info("Error with Apply button:", error.message);
+          throw error;
+        }
 
-          // Function to get total results count
-          const getTotalResults = async () => {
-            const resultsText = await page.$eval(
-              ".fds-pagination-showing-result",
-              (el) => el.textContent
+        // After date range is applied and before scraping data
+        logger.info("Setting results per page to 100...");
+        await page.waitForSelector(".fds-pagination-selector select");
+        await page.click(".fds-pagination-selector select");
+        await page.select(".fds-pagination-selector select", "100");
+
+        // Wait for data to reload with 100 records
+        await delay(3000);
+        await page.waitForSelector("table.fds-data-table tbody tr", {
+          visible: true,
+          timeout: 30000,
+        });
+
+        // Initialize array for all reservations with Set for tracking duplicates
+        const allReservations = [];
+        const processedReservationIds = new Set();
+
+        // Function to check if there's a next page
+        const hasNextPage = async () => {
+          return await page.evaluate(() => {
+            const nextButton = document.querySelector(
+              ".fds-pagination-button.next button"
             );
-            const match = resultsText.match(/of (\d+) Results/);
-            return match ? parseInt(match[1]) : 0;
-          };
+            return nextButton && !nextButton.disabled;
+          });
+        };
 
-          const totalResults = await getTotalResults();
-          logger.info(`Total reservations to fetch: ${totalResults}`);
+        // Function to get total results count
+        const getTotalResults = async () => {
+          const resultsText = await page.$eval(
+            ".fds-pagination-showing-result",
+            (el) => el.textContent
+          );
+          const match = resultsText.match(/of (\d+) Results/);
+          return match ? parseInt(match[1]) : 0;
+        };
 
-          let currentPage = 1;
-          let hasMore = true;
+        const totalResults = await getTotalResults();
+        logger.info(`Total reservations to fetch: ${totalResults}`);
 
-          while (hasMore) {
-            try {
-              logger.info(`Processing page ${currentPage}...`);
+        let currentPage = 1;
+        let hasMore = true;
 
-              // Wait for table data to load
-              await page.waitForSelector("table.fds-data-table tbody tr", {
-                visible: true,
-                timeout: 30000,
-              });
-              await delay(2000);
+        while (hasMore) {
+          try {
+            logger.info(`Processing page ${currentPage}...`);
 
-              // Get reservations from current page
-              const rows = await page.$$("table.fds-data-table tbody tr");
+            // Wait for table data to load
+            await page.waitForSelector("table.fds-data-table tbody tr", {
+              visible: true,
+              timeout: 30000,
+            });
+            await delay(2000);
 
-              for (const row of rows) {
-                try {
-                  // Get basic data first
-                  const basicData = await page.evaluate((row) => {
-                    return {
-                      guestName:
-                        row
-                          .querySelector(
-                            "td.guestName button.guestNameLink span.fds-button2-label"
-                          )
-                          ?.textContent.trim() || "",
-                      reservationId:
-                        row
-                          .querySelector("td.reservationId div.fds-cell")
-                          ?.textContent.trim() || "",
-                      confirmationCode:
-                        row
-                          .querySelector(
-                            "td.confirmationCode label.confirmationCodeLabel"
-                          )
-                          ?.textContent.trim() || "",
-                      checkInDate:
-                        row
-                          .querySelector("td.checkInDate")
-                          ?.textContent.trim() || "",
-                      checkOutDate:
-                        row
-                          .querySelector("td.checkOutDate")
-                          ?.textContent.trim() || "",
-                      roomType:
-                        row.querySelector("td.roomType")?.textContent.trim() ||
-                        "",
-                      bookingAmount:
-                        row
-                          .querySelector("td.bookingAmount .fds-currency-value")
-                          ?.textContent.trim() || "",
-                      bookedDate:
-                        row
-                          .querySelector("td.bookedOnDate")
-                          ?.textContent.trim() || "",
-                    };
-                  }, row);
+            // Get reservations from current page
+            const rows = await page.$$("table.fds-data-table tbody tr");
 
-                  // Check if we've already processed this reservation
-                  if (processedReservationIds.has(basicData.reservationId)) {
-                    logger.info(
-                      `Skipping duplicate reservation: ${basicData.reservationId}`
-                    );
-                    continue;
-                  }
-
-                  // Add to processed set
-                  processedReservationIds.add(basicData.reservationId);
-
-                  // Get card details
-                  const guestNameButton = await row.$(
-                    "td.guestName button.guestNameLink"
-                  );
-                  await guestNameButton.click();
-
-                  // Wait for initial dialog to appear with timeout
-                  try {
-                    await Promise.race([
-                      page.waitForSelector(".fds-dialog", {
-                        visible: true,
-                        timeout: 8000,
-                      }),
-                      new Promise((_, reject) =>
-                        setTimeout(
-                          () => reject(new Error("Dialog timeout")),
-                          8000
+            for (const row of rows) {
+              try {
+                // Get basic data first
+                const basicData = await page.evaluate((row) => {
+                  return {
+                    guestName:
+                      row
+                        .querySelector(
+                          "td.guestName button.guestNameLink span.fds-button2-label"
                         )
-                      ),
+                        ?.textContent.trim() || "",
+                    reservationId:
+                      row
+                        .querySelector("td.reservationId div.fds-cell")
+                        ?.textContent.trim() || "",
+                    confirmationCode:
+                      row
+                        .querySelector(
+                          "td.confirmationCode label.confirmationCodeLabel"
+                        )
+                        ?.textContent.trim() || "",
+                    checkInDate:
+                      row.querySelector("td.checkInDate")?.textContent.trim() ||
+                      "",
+                    checkOutDate:
+                      row
+                        .querySelector("td.checkOutDate")
+                        ?.textContent.trim() || "",
+                    roomType:
+                      row.querySelector("td.roomType")?.textContent.trim() ||
+                      "",
+                    bookingAmount:
+                      row
+                        .querySelector("td.bookingAmount .fds-currency-value")
+                        ?.textContent.trim() || "",
+                    bookedDate:
+                      row
+                        .querySelector("td.bookedOnDate")
+                        ?.textContent.trim() || "",
+                  };
+                }, row);
+
+                // Check if we've already processed this reservation
+                if (processedReservationIds.has(basicData.reservationId)) {
+                  logger.info(
+                    `Skipping duplicate reservation: ${basicData.reservationId}`
+                  );
+                  continue;
+                }
+
+                // Add to processed set
+                processedReservationIds.add(basicData.reservationId);
+
+                // Get card details
+                const guestNameButton = await row.$(
+                  "td.guestName button.guestNameLink"
+                );
+                await guestNameButton.click();
+
+                // Wait for initial dialog to appear with timeout
+                try {
+                  await Promise.race([
+                    page.waitForSelector(".fds-dialog", {
+                      visible: true,
+                      timeout: 8000,
+                    }),
+                    new Promise((_, reject) =>
+                      setTimeout(
+                        () => reject(new Error("Dialog timeout")),
+                        8000
+                      )
+                    ),
+                  ]);
+                } catch (error) {
+                  logger.info(
+                    "Dialog did not appear within timeout, skipping to next reservation"
+                  );
+                  continue;
+                }
+
+                // Check if this is a canceled reservation
+                const isCanceled = await page.evaluate(() => {
+                  const dialogTitle =
+                    document.querySelector(".fds-dialog-title");
+                  return (
+                    dialogTitle && dialogTitle.textContent.includes("Cancelled")
+                  );
+                });
+
+                if (isCanceled) {
+                  logger.info("Found canceled reservation, closing dialog...");
+                  try {
+                    // Try multiple methods to close the dialog
+                    await Promise.race([
+                      // Method 1: Click the close button
+                      page.click(".fds-dialog-header button.dialog-close"),
+                      // Method 2: Use JavaScript to click the close button
+                      page.evaluate(() => {
+                        const closeButton = document.querySelector(
+                          ".fds-dialog-header button.dialog-close"
+                        );
+                        if (closeButton) closeButton.click();
+                      }),
+                      // Method 3: Press Escape key
+                      page.keyboard.press("Escape"),
                     ]);
+                    await delay(1500); // Wait for dialog to close
+                    continue; // Skip to next reservation
                   } catch (error) {
-                    logger.info(
-                      "Dialog did not appear within timeout, skipping to next reservation"
+                    logger.warn(
+                      "Warning: Could not close canceled reservation dialog"
                     );
                     continue;
                   }
+                }
 
-                  // Check if this is a canceled reservation
-                  const isCanceled = await page.evaluate(() => {
-                    const dialogTitle =
-                      document.querySelector(".fds-dialog-title");
-                    return (
-                      dialogTitle &&
-                      dialogTitle.textContent.includes("Cancelled")
-                    );
-                  });
+                // Wait a bit for content to load
+                await delay(2000);
 
-                  if (isCanceled) {
-                    logger.info(
-                      "Found canceled reservation, closing dialog..."
-                    );
-                    try {
-                      // Try multiple methods to close the dialog
-                      await Promise.race([
-                        // Method 1: Click the close button
-                        page.click(".fds-dialog-header button.dialog-close"),
-                        // Method 2: Use JavaScript to click the close button
-                        page.evaluate(() => {
-                          const closeButton = document.querySelector(
-                            ".fds-dialog-header button.dialog-close"
-                          );
-                          if (closeButton) closeButton.click();
-                        }),
-                        // Method 3: Press Escape key
-                        page.keyboard.press("Escape"),
-                      ]);
-                      await delay(1500); // Wait for dialog to close
-                      continue; // Skip to next reservation
-                    } catch (error) {
-                      logger.warn(
-                        "Warning: Could not close canceled reservation dialog"
-                      );
-                      continue;
-                    }
+                // Scroll to the bottom of dialog content and wait
+                await page.evaluate(() => {
+                  const dialogContent = document.querySelector(
+                    ".fds-dialog-content"
+                  );
+                  if (dialogContent) {
+                    dialogContent.scrollTo(0, dialogContent.scrollHeight);
                   }
+                });
 
-                  // Wait a bit for content to load
-                  await delay(2000);
+                // Wait for content to load after scroll
+                await delay(2000);
 
-                  // Scroll to the bottom of dialog content and wait
-                  await page.evaluate(() => {
-                    const dialogContent = document.querySelector(
-                      ".fds-dialog-content"
-                    );
-                    if (dialogContent) {
-                      dialogContent.scrollTo(0, dialogContent.scrollHeight);
-                    }
-                  });
+                // Get card details with retry mechanism
+                let cardData = null;
+                let paymentData = null;
+                let remainingAmountToCharge = null;
+                let amountToRefund = null;
+                let retries = 0;
+                while (!cardData && !paymentData && retries < 3) {
+                  try {
+                    // First try to get card details
+                    cardData = await page.evaluate(() => {
+                      const cardNumber =
+                        document
+                          .querySelector(".cardNumber.replay-conceal bdi")
+                          ?.textContent.trim() || "";
+                      const expiryDate =
+                        document
+                          .querySelector(
+                            ".cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal"
+                          )
+                          ?.textContent.trim() || "";
+                      const cvv =
+                        document
+                          .querySelectorAll(
+                            ".cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal"
+                          )[1]
+                          ?.textContent.trim() || "";
 
-                  // Wait for content to load after scroll
-                  await delay(2000);
+                      if (cardNumber) {
+                        return {
+                          cardNumber,
+                          expiryDate,
+                          cvv,
+                        };
+                      }
+                      return null;
+                    });
 
-                  // Get card details with retry mechanism
-                  let cardData = null;
-                  let paymentData = null;
-                  let retries = 0;
-                  while (!cardData && !paymentData && retries < 3) {
-                    try {
-                      // First try to get card details
-                      cardData = await page.evaluate(() => {
-                        const cardNumber =
-                          document
-                            .querySelector(".cardNumber.replay-conceal bdi")
+                    // If no card data, try to get payment information
+                    if (!cardData) {
+                      paymentData = await page.evaluate(() => {
+                        // Find all section titles
+                        const sectionTitles = Array.from(
+                          document.querySelectorAll(".sidePanelSectionTitle")
+                        );
+
+                        // Find the payment sections
+                        const totalGuestPaymentTitle = sectionTitles.find(
+                          (el) => el.textContent.includes("Total guest payment")
+                        );
+                        const expediaCompensationTitle = sectionTitles.find(
+                          (el) =>
+                            el.textContent.includes("Expedia compensation")
+                        );
+                        const totalPayoutTitle = sectionTitles.find((el) =>
+                          el.textContent.includes("Your total payout")
+                        );
+
+                        // Get the values
+                        const totalGuestPayment =
+                          totalGuestPaymentTitle?.nextElementSibling
+                            ?.querySelector(".fds-currency-value")
                             ?.textContent.trim() || "";
-                        const expiryDate =
-                          document
-                            .querySelector(
-                              ".cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal"
-                            )
+                        const expediaCompensation =
+                          expediaCompensationTitle?.nextElementSibling
+                            ?.querySelector(".fds-currency-value")
                             ?.textContent.trim() || "";
-                        const cvv =
-                          document
-                            .querySelectorAll(
-                              ".cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal"
-                            )[1]
+                        const totalPayout =
+                          totalPayoutTitle?.nextElementSibling
+                            ?.querySelector(".fds-currency-value")
                             ?.textContent.trim() || "";
 
-                        if (cardNumber) {
+                        if (totalGuestPayment) {
                           return {
-                            cardNumber,
-                            expiryDate,
-                            cvv,
+                            totalGuestPayment,
+                            expediaCompensation,
+                            totalPayout,
                           };
                         }
                         return null;
                       });
-
-                      // If no card data, try to get payment information
-                      if (!cardData) {
-                        paymentData = await page.evaluate(() => {
-                          // Find all section titles
-                          const sectionTitles = Array.from(
-                            document.querySelectorAll(".sidePanelSectionTitle")
-                          );
-
-                          // Find the payment sections
-                          const totalGuestPaymentTitle = sectionTitles.find(
-                            (el) =>
-                              el.textContent.includes("Total guest payment")
-                          );
-                          const expediaCompensationTitle = sectionTitles.find(
-                            (el) =>
-                              el.textContent.includes("Expedia compensation")
-                          );
-                          const totalPayoutTitle = sectionTitles.find((el) =>
-                            el.textContent.includes("Your total payout")
-                          );
-
-                          // Get the values
-                          const totalGuestPayment =
-                            totalGuestPaymentTitle?.nextElementSibling
-                              ?.querySelector(".fds-currency-value")
-                              ?.textContent.trim() || "";
-                          const expediaCompensation =
-                            expediaCompensationTitle?.nextElementSibling
-                              ?.querySelector(".fds-currency-value")
-                              ?.textContent.trim() || "";
-                          const totalPayout =
-                            totalPayoutTitle?.nextElementSibling
-                              ?.querySelector(".fds-currency-value")
-                              ?.textContent.trim() || "";
-
-                          if (totalGuestPayment) {
-                            return {
-                              totalGuestPayment,
-                              expediaCompensation,
-                              totalPayout,
-                            };
-                          }
-                          return null;
-                        });
-                      }
-                    } catch (e) {
-                      retries++;
-                      await delay(1000);
                     }
-                  }
-
-                  // Close the side panel
-                  try {
-                    await page.click(".fds-dialog-header button.dialog-close");
-                    await delay(1500);
-                  } catch (e) {
-                    logger.warn("Warning: Could not close dialog normally");
-                  }
-
-                  // Add to reservations array with either card data or payment data
-                  allReservations.push({
-                    ...basicData,
-                    ...(cardData || {}),
-                    ...(paymentData || {}),
-                    hasCardInfo: !!cardData,
-                    hasPaymentInfo: !!paymentData,
-                  });
-                } catch (error) {
-                  logger.info(`Error processing reservation: ${error.message}`);
-                  if (basicData) {
-                    allReservations.push({
-                      ...basicData,
-                      cardNumber: "N/A",
-                      expiryDate: "N/A",
-                      cvv: "N/A",
+                    
+                    // Extract "Remaining amount to charge" and "Amount to refund"
+                    const additionalPaymentInfo = await page.evaluate(() => {
+                      // Find "Remaining amount to charge"
+                      const remainingAmountSection = Array.from(
+                        document.querySelectorAll('.fds-cell.sidePanelSection')
+                      ).find(section => 
+                        section.textContent.includes('Remaining amount to charge')
+                      );
+                      
+                      const remainingAmount = remainingAmountSection
+                        ?.querySelector('.fds-currency-value')
+                        ?.textContent.trim() || "";
+                        
+                      // Find "Amount to refund"
+                      const refundSection = Array.from(
+                        document.querySelectorAll('.fds-grid.sidePanelSection')
+                      ).find(section => 
+                        section.textContent.includes('Amount to refund')
+                      );
+                      
+                      const refundAmount = refundSection
+                        ?.querySelector('.fds-currency-value')
+                        ?.textContent.trim() || "";
+                        
+                      return {
+                        remainingAmountToCharge: remainingAmount,
+                        amountToRefund: refundAmount
+                      };
                     });
+                    
+                    if (additionalPaymentInfo) {
+                      remainingAmountToCharge = additionalPaymentInfo.remainingAmountToCharge;
+                      amountToRefund = additionalPaymentInfo.amountToRefund;
+                      
+                      if (remainingAmountToCharge) {
+                        logger.info(`Found Remaining amount to charge: ${remainingAmountToCharge}`);
+                      }
+                      
+                      if (amountToRefund) {
+                        logger.info(`Found Amount to refund: ${amountToRefund}`);
+                      }
+                    }
+                  } catch (e) {
+                    retries++;
+                    await delay(1000);
                   }
                 }
-              }
+                
+                //////////////////////////////////////////////////////////////
+                //close the side panel
+                //////////////////////////////////////////////////////////////
+                try {
+                  await page.click(".fds-dialog-header button.dialog-close");
+                  await delay(1500);
+                } catch (e) {
+                  logger.warn("Warning: Could not close dialog normally");
+                }
 
-              logger.info(
-                `Processed ${allReservations.length} of ${totalResults} reservations`
-              );
-
-              // Check if there's a next page
-              hasMore = await hasNextPage();
-              if (hasMore) {
-                await page.click(".fds-pagination-button.next button");
-                await delay(2000);
-                currentPage++;
+                // Add to reservations array with either card data or payment data
+                allReservations.push({
+                  ...basicData,
+                  ...(cardData || {}),
+                  ...(paymentData || {}),
+                  hasCardInfo: !!cardData,
+                  hasPaymentInfo: !!paymentData,
+                  remainingAmountToCharge: remainingAmountToCharge || "N/A",
+                  amountToRefund: amountToRefund || "N/A"
+                });
+              } catch (error) {
+                logger.info(`Error processing reservation: ${error.message}`);
+                if (basicData) {
+                  allReservations.push({
+                    ...basicData,
+                    cardNumber: "N/A",
+                    expiryDate: "N/A",
+                    cvv: "N/A",
+                    remainingAmountToCharge: "N/A",
+                    amountToRefund: "N/A"
+                  });
+                }
               }
-            } catch (pageError) {
-              logger.info(
-                `Error processing page ${currentPage}: ${pageError.message}`
-              );
-              // Try to recover by reloading the page
-              await page.reload({ waitUntil: "networkidle0" });
-              await delay(5000);
             }
+
+            logger.info(
+              `Processed ${allReservations.length} of ${totalResults} reservations`
+            );
+
+            // Check if there's a next page
+            hasMore = await hasNextPage();
+            if (hasMore) {
+              await page.click(".fds-pagination-button.next button");
+              await delay(2000);
+              currentPage++;
+            }
+          } catch (pageError) {
+            logger.info(
+              `Error processing page ${currentPage}: ${pageError.message}`
+            );
+            // Try to recover by reloading the page
+            await page.reload({ waitUntil: "networkidle0" });
+            await delay(5000);
           }
-
-          logger.info(`Found total ${allReservations.length} reservations`);
-
-          // At the end, verify we have unique reservations
-          logger.info(`Total unique reservations: ${allReservations.length}`);
-          logger.info(`Total processed IDs: ${processedReservationIds.size}`);
-
-          // Get current date and time for filename
-          const now = new Date();
-          const timestamp = now.toISOString().replace(/[:.]/g, "-"); // Format: 2024-03-14T10-30-15-000Z
-
-          // Save all reservations to Excel with timestamp
-          const workbook = xlsx.utils.book_new();
-          const wsData = [
-            [
-              "Guest Name",
-              "Reservation ID",
-              "Confirmation Code",
-              "Check-in Date",
-              "Check-out Date",
-              "Room Type",
-              "Booking Amount",
-              "Booked Date",
-              "Card Number",
-              "Expiry Date",
-              "CVV",
-              "Has Card Info",
-              "Has Payment Info",
-              "Total Guest Payment",
-              "Expedia Compensation",
-              "Total Payout",
-              "Status",
-            ],
-            ...allReservations.map((res) => [
-              res.guestName,
-              res.reservationId,
-              res.confirmationCode,
-              res.checkInDate,
-              res.checkOutDate,
-              res.roomType,
-              res.bookingAmount,
-              res.bookedDate,
-              res.cardNumber || "N/A",
-              res.expiryDate || "N/A",
-              res.cvv || "N/A",
-              res.hasCardInfo ? "Yes" : "No",
-              res.hasPaymentInfo ? "Yes" : "No",
-              res.totalGuestPayment || "N/A",
-              res.expediaCompensation || "N/A",
-              res.totalPayout || "N/A",
-              res.status || "Active",
-            ]),
-          ];
-
-          const ws = xlsx.utils.aoa_to_sheet(wsData);
-          xlsx.utils.book_append_sheet(workbook, ws, "Reservations");
-          xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`);
-          logger.info(
-            `Saved reservation data to reservations_${timestamp}.xlsx`
-          );
-
-          // Close the browser
-          // await browser.close()
-          return allReservations;
         }
 
-        logger.info("No reservation data found after multiple retries");
-        if (browser) await browser.close();
-        return [];
-      } catch (error) {
-        logger.error("Error finding/clicking Reservations:", error.message);
-        throw error;
+        logger.info(`Found total ${allReservations.length} reservations`);
+
+        // At the end, verify we have unique reservations
+        logger.info(`Total unique reservations: ${allReservations.length}`);
+        logger.info(`Total processed IDs: ${processedReservationIds.size}`);
+
+        // Get current date and time for filename
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/[:.]/g, "-"); // Format: 2024-03-14T10-30-15-000Z
+
+        // Save all reservations to Excel with timestamp
+        const workbook = xlsx.utils.book_new();
+        const wsData = [
+          [
+            "Guest Name",
+            "Reservation ID",
+            "Confirmation Code",
+            "Check-in Date",
+            "Check-out Date",
+            "Room Type",
+            "Booking Amount",
+            "Booked Date",
+            "Card Number",
+            "Expiry Date",
+            "CVV",
+            "Has Card Info",
+            "Has Payment Info",
+            "Total Guest Payment",
+            "Expedia Compensation",
+            "Total Payout",
+            "Remaining Amount to Charge",
+            "Amount to Refund",
+            "Status",
+          ],
+          ...allReservations.map((res) => [
+            res.guestName,
+            res.reservationId,
+            res.confirmationCode,
+            res.checkInDate,
+            res.checkOutDate,
+            res.roomType,
+            res.bookingAmount,
+            res.bookedDate,
+            res.cardNumber || "N/A",
+            res.expiryDate || "N/A",
+            res.cvv || "N/A",
+            res.hasCardInfo ? "Yes" : "No",
+            res.hasPaymentInfo ? "Yes" : "No",
+            res.totalGuestPayment || "N/A",
+            res.expediaCompensation || "N/A",
+            res.totalPayout || "N/A",
+            res.remainingAmountToCharge || "N/A",
+            res.amountToRefund || "N/A",
+            res.status || "Active",
+          ]),
+        ];
+
+        const ws = xlsx.utils.aoa_to_sheet(wsData);
+        xlsx.utils.book_append_sheet(workbook, ws, "Reservations");
+        xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`);
+        logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`);
+
+        // Close the browser
+        // await browser.close()
+        return allReservations;
       }
+
+      logger.info("No reservation data found after multiple retries");
+      if (browser) await browser.close();
+      return [];
+    } catch (error) {
+      logger.error("Error finding/clicking Reservations:", error.message);
+      throw error;
     }
-   catch (error) {
+  } catch (error) {
     logger.error(`Error finding/clicking property: ${error.message}`);
     if (browser) await browser.close();
     throw error;
