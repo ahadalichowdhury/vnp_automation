@@ -7629,6 +7629,474 @@
       "level": "INFO",
       "message": "Saved reservation data to reservations_2025-03-12T11-19-29-371Z.xlsx",
       "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:01:28.823Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:02:00.384Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:03:33.959Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:07:54.244Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:07:54.246Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:07:54.278Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/4/2025 to 1/6/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:07:55.129Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:07:57.970Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Navigating frame was detached",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:20.539Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:20.542Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:20.548Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/4/2025 to 1/6/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:21.068Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:42.128Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:46.236Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:08:46.239Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:02.976Z",
+      "level": "INFO",
+      "message": "Password page fully loaded, entering password...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:06.596Z",
+      "level": "INFO",
+      "message": "Password entered, waiting before clicking submit...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:11.601Z",
+      "level": "WARN",
+      "message": "Password entry issue: expected 14 chars but got 10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:19.641Z",
+      "level": "INFO",
+      "message": "Clicking password continue button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:19.704Z",
+      "level": "INFO",
+      "message": "Waiting for verification page...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:27.281Z",
+      "level": "INFO",
+      "message": "Waiting for verification email...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:45.238Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:45.240Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:45.243Z",
+      "level": "INFO",
+      "message": "Got verification code:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:09:47.444Z",
+      "level": "INFO",
+      "message": "Clicked the verify button successfully!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:07.749Z",
+      "level": "INFO",
+      "message": "Login successful!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:07.752Z",
+      "level": "INFO",
+      "message": "Looking for Reservations link...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:17.049Z",
+      "level": "INFO",
+      "message": "Successfully navigated to Reservations page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:17.052Z",
+      "level": "INFO",
+      "message": "Waiting for date filters...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:17.064Z",
+      "level": "INFO",
+      "message": "Selecting \"Checking out\" filter...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:19.085Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/4/2025 to 1/6/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:19.088Z",
+      "level": "INFO",
+      "message": "Converting from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:19.090Z",
+      "level": "INFO",
+      "message": "Converting to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.129Z",
+      "level": "INFO",
+      "message": "First month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.131Z",
+      "level": "INFO",
+      "message": "Current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.135Z",
+      "level": "INFO",
+      "message": "Current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.143Z",
+      "level": "INFO",
+      "message": "Target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.147Z",
+      "level": "INFO",
+      "message": "Target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.151Z",
+      "level": "INFO",
+      "message": "Target Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:20.155Z",
+      "level": "INFO",
+      "message": "Total months to navigate (start):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.690Z",
+      "level": "INFO",
+      "message": "Second month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.692Z",
+      "level": "INFO",
+      "message": "End current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.694Z",
+      "level": "INFO",
+      "message": "End current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.697Z",
+      "level": "INFO",
+      "message": "End target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.699Z",
+      "level": "INFO",
+      "message": "End target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.702Z",
+      "level": "INFO",
+      "message": "End Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:22.704Z",
+      "level": "INFO",
+      "message": "Total end months to navigate:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.005Z",
+      "level": "INFO",
+      "message": "Expected from date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.007Z",
+      "level": "INFO",
+      "message": "Expected from date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.009Z",
+      "level": "INFO",
+      "message": "Actual from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.011Z",
+      "level": "INFO",
+      "message": "Expected to date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.013Z",
+      "level": "INFO",
+      "message": "Expected to date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.015Z",
+      "level": "INFO",
+      "message": "Actual to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:25.018Z",
+      "level": "INFO",
+      "message": "Date mismatch detected, attempting final correction...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:27.025Z",
+      "level": "INFO",
+      "message": "Set dates:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:27.027Z",
+      "level": "INFO",
+      "message": "Waiting for the More filters button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:27.047Z",
+      "level": "INFO",
+      "message": "Clicked More filters button, waiting for dropdown to appear...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:27.057Z",
+      "level": "INFO",
+      "message": "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:28.109Z",
+      "level": "INFO",
+      "message": "Applied filters from dropdown",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:30.114Z",
+      "level": "INFO",
+      "message": "Clicked Apply button, waiting for data to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:46.415Z",
+      "level": "INFO",
+      "message": "Loading completed, continuing with data processing...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:46.417Z",
+      "level": "INFO",
+      "message": "Starting to process reservation data...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:48.436Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:50.442Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 2...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:50.445Z",
+      "level": "INFO",
+      "message": "Data count stabilized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:50.454Z",
+      "level": "INFO",
+      "message": "Final reservation count: 10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:50.459Z",
+      "level": "INFO",
+      "message": "Setting results per page to 100...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:53.625Z",
+      "level": "INFO",
+      "message": "Total reservations to fetch: 372",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:10:53.628Z",
+      "level": "INFO",
+      "message": "Processing page 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:11:03.697Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:11:11.728Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:11:16.247Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 0.03",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:11:22.210Z",
+      "level": "INFO",
+      "message": "Found Remaining amount to charge: 79.76",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:13:14.141Z",
+      "level": "WARN",
+      "message": "Warning: Could not close dialog normally",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:13:14.144Z",
+      "level": "INFO",
+      "message": "Error processing reservation: Attempted to use detached Frame 'DC6769AF9A45CDF83042EB77ECB2A2DC'.",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:13:14.147Z",
+      "level": "INFO",
+      "message": "Error processing page 1: basicData is not defined",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:13:14.151Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking Reservations:",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-03-13T07:13:14.154Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Attempted to use detached Frame 'DC6769AF9A45CDF83042EB77ECB2A2DC'.",
+      "data": null
     }
   ]
 }
