@@ -479,8 +479,8 @@ function splitDateRange(startDate, endDate) {
     }
 
     chunks.push({
-      start: currentStart.toLocaleDateString('en-US'),
-      end: currentEnd.toLocaleDateString('en-US'),
+      start: currentStart.toLocaleDateString("en-US"),
+      end: currentEnd.toLocaleDateString("en-US"),
     });
 
     currentStart = new Date(currentEnd);
@@ -502,7 +502,10 @@ function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 3) {
     if (nextDate > endDate) {
       nextDate.setDate(endDate.getDate());
     }
-    dateChunks.push({ start: currentDate.toLocaleDateString(), end: nextDate.toLocaleDateString() });
+    dateChunks.push({
+      start: currentDate.toLocaleDateString(),
+      end: nextDate.toLocaleDateString(),
+    });
     currentDate.setDate(currentDate.getDate() + 3);
   }
   return dateChunks;
@@ -549,7 +552,6 @@ async function loginToExpediaPartner(
 
     await delay(randomDelay());
 
-
     // Wait for email input
     await page.waitForSelector("#emailControl");
 
@@ -567,75 +569,172 @@ async function loginToExpediaPartner(
     // Wait for password page to be fully loaded
     try {
       logger.info("Waiting for password page to fully load...");
-      
-      // First wait for the password field to appear in the DOM
-      await page.waitForSelector("#password-input", { 
-        visible: true,
-        timeout: 60000 
-      });
-      
-      // Add a significant delay to ensure the page is fully loaded and stable
-      await delay(3000);
-      
-      // Verify the password field is actually ready for input
-      const isInputReady = await page.evaluate(() => {
-        const input = document.querySelector("#password-input");
-        return input && !input.disabled && document.activeElement !== input;
-      });
-      
-      if (!isInputReady) {
-        logger.info("Password input not fully ready, waiting longer...");
-        await delay(2000);
-      }
-      
-      // Click on the password field first to ensure focus
-      await page.click("#password-input");
-      await delay(1000);
-      
-      // Clear the field in case there's any text
-      await page.evaluate(() => {
-        document.querySelector("#password-input").value = "";
-      });
-      await delay(500);
-      
-      logger.info("Password page fully loaded, entering password...");
-      
-      // Type password slowly with increased delays
-      for (let char of password) {
-        await page.type("#password-input", char, { delay: 150 }); // Increased delay
-        await delay(100); // Increased delay between characters
-      }
-      
-      // Wait longer before clicking submit to ensure password is fully entered
-      logger.info("Password entered, waiting before clicking submit...");
-      await delay(5000);
-      
-      // Verify password was entered correctly
-      const enteredPassword = await page.evaluate(() => {
-        return document.querySelector("#password-input").value;
-      });
-      
-      if (enteredPassword.length !== password.length) {
-        logger.warn(`Password entry issue: expected ${password.length} chars but got ${enteredPassword.length}`);
-        
-        // Re-enter password if needed
-        await page.evaluate(() => {
-          document.querySelector("#password-input").value = "";
-        });
-        await delay(1000);
-        
-        // Try again with even slower typing
-        for (let char of password) {
-          await page.type("#password-input", char, { delay: 200 });
-          await delay(150);
-        }
-        await delay(2000);
-      }
-      
-      // Click the login button
-      logger.info("Clicking password continue button...");
-      await page.click("#password-continue");
 
+      // Try to find the password input field with a try-catch to handle both possible selectors
+      let passwordInputFound = false;
+      
+      try {
+        // First try to find #password-input
+        const passwordInput = await page.waitForSelector("#password-input", {
+          visible: true,
+          timeout: 15000, // Shorter timeout for first attempt
+        });
+        
+        if (passwordInput) {
+          passwordInputFound = true;
+          
+          // Add a significant delay to ensure the page is fully loaded and stable
+          await delay(3000);
+
+          // Verify the password field is actually ready for input
+          const isInputReady = await page.evaluate(() => {
+            const input = document.querySelector("#password-input");
+            return input && !input.disabled && document.activeElement !== input;
+          });
+
+          if (!isInputReady) {
+            logger.info("Password input not fully ready, waiting longer...");
+            await delay(2000);
+          }
+
+          // Click on the password field first to ensure focus
+          await page.click("#password-input");
+          await delay(1000);
+
+          // Clear the field in case there's any text
+          await page.evaluate(() => {
+            document.querySelector("#password-input").value = "";
+          });
+          await delay(500);
+
+          logger.info("Password page fully loaded, entering password...");
+
+          // Type password slowly with increased delays
+          for (let char of password) {
+            await page.type("#password-input", char, { delay: 150 }); // Increased delay
+            await delay(100); // Increased delay between characters
+          }
+
+          // Wait longer before clicking submit to ensure password is fully entered
+          logger.info("Password entered, waiting before clicking submit...");
+          await delay(5000);
+
+          // Verify password was entered correctly
+          const enteredPassword = await page.evaluate(() => {
+            return document.querySelector("#password-input").value;
+          });
+
+          if (enteredPassword.length !== password.length) {
+            logger.warn(
+              `Password entry issue: expected ${password.length} chars but got ${enteredPassword.length}`
+            );
+
+            // Re-enter password if needed
+            await page.evaluate(() => {
+              document.querySelector("#password-input").value = "";
+            });
+            await delay(1000);
+
+            // Try again with even slower typing
+            for (let char of password) {
+              await page.type("#password-input", char, { delay: 200 });
+              await delay(150);
+            }
+            await delay(2000);
+          }
+
+          // Click the login button
+          logger.info("Clicking password continue button...");
+          await page.click("#password-continue");
+        }
+      } catch (error) {
+        logger.info("Could not find #password-input, trying #passwordControl instead:", error.message);
+        passwordInputFound = false;
+      }
+      
+      // If #password-input wasn't found, try #passwordControl
+      if (!passwordInputFound) {
+        try {
+          // Check if #passwordControl exists
+          const passwordControlExists = await page.evaluate(() => {
+            return !!document.querySelector("#passwordControl");
+          });
+          
+          if (!passwordControlExists) {
+            logger.info("Neither #password-input nor #passwordControl found. Checking page content...");
+            const pageContent = await page.content();
+            logger.info("Page title: " + await page.title());
+            throw new Error("Password input field not found on the page");
+          }
+          
+          // Add a significant delay to ensure the page is fully loaded and stable
+          await delay(3000);
+
+          // Verify the password field is actually ready for input
+          const isInputReady = await page.evaluate(() => {
+            const input = document.querySelector("#passwordControl");
+            return input && !input.disabled && document.activeElement !== input;
+          });
+
+          if (!isInputReady) {
+            logger.info("Password input not fully ready, waiting longer...");
+            await delay(2000);
+          }
+
+          // Click on the password field first to ensure focus
+          await page.click("#passwordControl");
+          await delay(1000);
+
+          // Clear the field in case there's any text
+          await page.evaluate(() => {
+            document.querySelector("#passwordControl").value = "";
+          });
+          await delay(500);
+
+          logger.info("Password page fully loaded, entering password...");
+
+          // Type password slowly with increased delays
+          for (let char of password) {
+            await page.type("#passwordControl", char, { delay: 150 }); // Increased delay
+            await delay(100); // Increased delay between characters
+          }
+
+          // Wait longer before clicking submit to ensure password is fully entered
+          logger.info("Password entered, waiting before clicking submit...");
+          await delay(5000);
+
+          // Verify password was entered correctly
+          const enteredPassword = await page.evaluate(() => {
+            return document.querySelector("#passwordControl").value;
+          });
+
+          if (enteredPassword.length !== password.length) {
+            logger.warn(
+              `Password entry issue: expected ${password.length} chars but got ${enteredPassword.length}`
+            );
+
+            // Re-enter password if needed
+            await page.evaluate(() => {
+              document.querySelector("#passwordControl").value = "";
+            });
+            await delay(1000);
+
+            // Try again with even slower typing
+            for (let char of password) {
+              await page.type("#passwordControl", char, { delay: 200 });
+              await delay(150);
+            }
+            await delay(2000);
+          }
+
+          // Click the login button
+          logger.info("Clicking password continue button...");
+          await page.click("#signInButton");
+        } catch (error) {
+          logger.error("Error handling password input:", error.message);
+          throw error;
+        }
+      }
     } catch (error) {
       logger.info("Error during password entry:", error.message);
       throw error;
@@ -870,8 +969,9 @@ async function loginToExpediaPartner(
               from: document.querySelector(
                 ".from-input-label input.fds-field-input"
               ).value,
-              to: document.querySelector(".to-input-label input.fds-field-input")
-                .value,
+              to: document.querySelector(
+                ".to-input-label input.fds-field-input"
+              ).value,
             };
           });
 
@@ -880,7 +980,6 @@ async function loginToExpediaPartner(
           //////////////////////////////////////////////////////////////
           //more filter button
           //////////////////////////////////////////////////////////////
-
 
           //wait for the more filter button
           logger.info("Waiting for the More filters button...");
@@ -998,7 +1097,6 @@ async function loginToExpediaPartner(
           //more filter button end
           //////////////////////////////////////////////////////////////
 
-
           // Find and click the Apply button
           try {
             // Wait for the apply button to be visible
@@ -1038,7 +1136,9 @@ async function loginToExpediaPartner(
               timeout: 30000,
             });
 
-            logger.info("Loading completed, continuing with data processing...");
+            logger.info(
+              "Loading completed, continuing with data processing..."
+            );
 
             // Then continue with your existing code for processing the data...
             logger.info("Starting to process reservation data...");
@@ -1064,7 +1164,9 @@ async function loginToExpediaPartner(
               });
 
               logger.info(
-                `Found ${currentCount} reservations on attempt ${attempts + 1}...`
+                `Found ${currentCount} reservations on attempt ${
+                  attempts + 1
+                }...`
               );
 
               if (currentCount === previousCount && currentCount > 0) {
@@ -1172,8 +1274,9 @@ async function loginToExpediaPartner(
                           )
                           ?.textContent.trim() || "",
                       checkInDate:
-                        row.querySelector("td.checkInDate")?.textContent.trim() ||
-                        "",
+                        row
+                          .querySelector("td.checkInDate")
+                          ?.textContent.trim() || "",
                       checkOutDate:
                         row
                           .querySelector("td.checkOutDate")
@@ -1235,12 +1338,15 @@ async function loginToExpediaPartner(
                     const dialogTitle =
                       document.querySelector(".fds-dialog-title");
                     return (
-                      dialogTitle && dialogTitle.textContent.includes("Cancelled")
+                      dialogTitle &&
+                      dialogTitle.textContent.includes("Cancelled")
                     );
                   });
 
                   if (isCanceled) {
-                    logger.info("Found canceled reservation, closing dialog...");
+                    logger.info(
+                      "Found canceled reservation, closing dialog..."
+                    );
                     try {
                       // Try multiple methods to close the dialog
                       await Promise.race([
@@ -1329,7 +1435,8 @@ async function loginToExpediaPartner(
 
                           // Find the payment sections
                           const totalGuestPaymentTitle = sectionTitles.find(
-                            (el) => el.textContent.includes("Total guest payment")
+                            (el) =>
+                              el.textContent.includes("Total guest payment")
                           );
                           const expediaCompensationTitle = sectionTitles.find(
                             (el) =>
@@ -1363,47 +1470,60 @@ async function loginToExpediaPartner(
                           return null;
                         });
                       }
-                      
+
                       // Extract "Remaining amount to charge" and "Amount to refund"
                       const additionalPaymentInfo = await page.evaluate(() => {
                         // Find "Remaining amount to charge"
                         const remainingAmountSection = Array.from(
-                          document.querySelectorAll('.fds-cell.sidePanelSection')
-                        ).find(section => 
-                          section.textContent.includes('Remaining amount to charge')
+                          document.querySelectorAll(
+                            ".fds-cell.sidePanelSection"
+                          )
+                        ).find((section) =>
+                          section.textContent.includes(
+                            "Remaining amount to charge"
+                          )
                         );
-                        
-                        const remainingAmount = remainingAmountSection
-                          ?.querySelector('.fds-currency-value')
-                          ?.textContent.trim() || "";
-                          
+
+                        const remainingAmount =
+                          remainingAmountSection
+                            ?.querySelector(".fds-currency-value")
+                            ?.textContent.trim() || "";
+
                         // Find "Amount to refund"
                         const refundSection = Array.from(
-                          document.querySelectorAll('.fds-grid.sidePanelSection')
-                        ).find(section => 
-                          section.textContent.includes('Amount to refund')
+                          document.querySelectorAll(
+                            ".fds-grid.sidePanelSection"
+                          )
+                        ).find((section) =>
+                          section.textContent.includes("Amount to refund")
                         );
-                        
-                        const refundAmount = refundSection
-                          ?.querySelector('.fds-currency-value')
-                          ?.textContent.trim() || "";
-                          
+
+                        const refundAmount =
+                          refundSection
+                            ?.querySelector(".fds-currency-value")
+                            ?.textContent.trim() || "";
+
                         return {
                           remainingAmountToCharge: remainingAmount,
-                          amountToRefund: refundAmount
+                          amountToRefund: refundAmount,
                         };
                       });
-                      
+
                       if (additionalPaymentInfo) {
-                        remainingAmountToCharge = additionalPaymentInfo.remainingAmountToCharge;
+                        remainingAmountToCharge =
+                          additionalPaymentInfo.remainingAmountToCharge;
                         amountToRefund = additionalPaymentInfo.amountToRefund;
-                        
+
                         if (remainingAmountToCharge) {
-                          logger.info(`Found Remaining amount to charge: ${remainingAmountToCharge}`);
+                          logger.info(
+                            `Found Remaining amount to charge: ${remainingAmountToCharge}`
+                          );
                         }
-                        
+
                         if (amountToRefund) {
-                          logger.info(`Found Amount to refund: ${amountToRefund}`);
+                          logger.info(
+                            `Found Amount to refund: ${amountToRefund}`
+                          );
                         }
                       }
                     } catch (e) {
@@ -1411,7 +1531,7 @@ async function loginToExpediaPartner(
                       await delay(1000);
                     }
                   }
-                  
+
                   //////////////////////////////////////////////////////////////
                   //close the side panel
                   //////////////////////////////////////////////////////////////
@@ -1431,8 +1551,13 @@ async function loginToExpediaPartner(
                     hasPaymentInfo: !!paymentData,
                     remainingAmountToCharge: remainingAmountToCharge || "N/A",
                     amountToRefund: amountToRefund || "N/A",
-                    amountToChargeOrRefund: remainingAmountToCharge || amountToRefund || "N/A",
-                    reasonOfCharge: remainingAmountToCharge ? "Remaining Amount to Charge" : (amountToRefund ? "Amount to Refund" : "N/A")
+                    amountToChargeOrRefund:
+                      remainingAmountToCharge || amountToRefund || "N/A",
+                    reasonOfCharge: remainingAmountToCharge
+                      ? "Remaining Amount to Charge"
+                      : amountToRefund
+                      ? "Amount to Refund"
+                      : "N/A",
                   });
                 } catch (error) {
                   logger.info(`Error processing reservation: ${error.message}`);
@@ -1445,7 +1570,7 @@ async function loginToExpediaPartner(
                       remainingAmountToCharge: "N/A",
                       amountToRefund: "N/A",
                       amountToChargeOrRefund: "N/A",
-                      reasonOfCharge: "N/A"
+                      reasonOfCharge: "N/A",
                     });
                   }
                 }
@@ -1532,7 +1657,9 @@ async function loginToExpediaPartner(
           const ws = xlsx.utils.aoa_to_sheet(wsData);
           xlsx.utils.book_append_sheet(workbook, ws, "Reservations");
           xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`);
-          logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`);
+          logger.info(
+            `Saved reservation data to reservations_${timestamp}.xlsx`
+          );
 
           // Close the browser
           // await browser.close()
@@ -1659,7 +1786,10 @@ app.get("/api/expedia", async (req, res) => {
       formattedEndDate
     );
 
-    const dateChunks = splitDateRangeIntoChunks(formattedStartDate, formattedEndDate);
+    const dateChunks = splitDateRangeIntoChunks(
+      formattedStartDate,
+      formattedEndDate
+    );
 
     for (const chunk of dateChunks) {
       logger.info(`Processing date range: ${chunk.start} to ${chunk.end}`);

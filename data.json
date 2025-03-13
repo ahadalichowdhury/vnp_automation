@@ -8097,6 +8097,2070 @@
       "level": "ERROR",
       "message": "Error finding/clicking property: Attempted to use detached Frame 'DC6769AF9A45CDF83042EB77ECB2A2DC'.",
       "data": null
+    },
+    {
+      "timestamp": "2025-03-13T07:59:15.884Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:37.976Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:37.992Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:38.032Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:39.960Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:50.595Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:55.886Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:02:55.888Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:03:17.398Z",
+      "level": "INFO",
+      "message": "Error during password entry:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:03:17.401Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Waiting for selector `#password-input` failed: Protocol error (Runtime.callFunctionOn): Target closed",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:06:43.272Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:06:46.863Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:07:02.122Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:07:09.322Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:07:11.043Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:08:24.352Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:08:28.269Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:08:33.309Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:08:34.121Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:08:53.068Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:09:04.728Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:09:17.576Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:04.930Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:08.519Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:11.808Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:14.311Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:15.545Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:16.944Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:31.705Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:11:56.098Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:13:05.474Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:13:07.261Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:13:55.161Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:13:59.331Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:23.431Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:25.238Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:34.115Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:35.312Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:42.917Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:51.425Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:52.216Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:14:59.199Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:15:00.052Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:15:06.214Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:15:07.346Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:15:12.917Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:15:13.598Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:16:21.017Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:08.049Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:08.051Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:08.093Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:09.838Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:19.057Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:24.479Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:17:24.480Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:18:24.485Z",
+      "level": "INFO",
+      "message": "Error during password entry:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:18:24.492Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Waiting for selector `#password-input` failed: Waiting failed: 60000ms exceeded",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:20:52.903Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:17.993Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:28.469Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:28.472Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:28.508Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:30.227Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:43.262Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:48.091Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:21:48.092Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:03.097Z",
+      "level": "INFO",
+      "message": "Could not find #password-input, trying #passwordControl instead:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:07.632Z",
+      "level": "INFO",
+      "message": "Password page fully loaded, entering password...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:10.529Z",
+      "level": "INFO",
+      "message": "Password entered, waiting before clicking submit...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:15.543Z",
+      "level": "INFO",
+      "message": "Clicking password continue button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:15.566Z",
+      "level": "INFO",
+      "message": "Waiting for verification page...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:20.451Z",
+      "level": "INFO",
+      "message": "Waiting for verification email...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:41.049Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:41.055Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:41.058Z",
+      "level": "INFO",
+      "message": "Got verification code:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:42.906Z",
+      "level": "INFO",
+      "message": "Clicked the verify button successfully!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:52.327Z",
+      "level": "INFO",
+      "message": "Login successful!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:52.341Z",
+      "level": "INFO",
+      "message": "Searching for property: embassy",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:22:55.107Z",
+      "level": "INFO",
+      "message": "Found property: Embassy Suites by Hilton Atlanta NE Gwinnett Sugarloaf, clicking...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:18.312Z",
+      "level": "INFO",
+      "message": "Looking for Reservations link...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:26.610Z",
+      "level": "INFO",
+      "message": "Successfully navigated to Reservations page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:26.616Z",
+      "level": "INFO",
+      "message": "Waiting for date filters...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:26.624Z",
+      "level": "INFO",
+      "message": "Selecting \"Checking out\" filter...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:28.635Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:28.639Z",
+      "level": "INFO",
+      "message": "Converting from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:28.641Z",
+      "level": "INFO",
+      "message": "Converting to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.670Z",
+      "level": "INFO",
+      "message": "First month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.671Z",
+      "level": "INFO",
+      "message": "Current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.672Z",
+      "level": "INFO",
+      "message": "Current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.679Z",
+      "level": "INFO",
+      "message": "Target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.680Z",
+      "level": "INFO",
+      "message": "Target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.681Z",
+      "level": "INFO",
+      "message": "Target Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:29.682Z",
+      "level": "INFO",
+      "message": "Total months to navigate (start):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.180Z",
+      "level": "INFO",
+      "message": "Second month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.181Z",
+      "level": "INFO",
+      "message": "End current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.182Z",
+      "level": "INFO",
+      "message": "End current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.184Z",
+      "level": "INFO",
+      "message": "End target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.185Z",
+      "level": "INFO",
+      "message": "End target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.185Z",
+      "level": "INFO",
+      "message": "End Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:32.187Z",
+      "level": "INFO",
+      "message": "Total end months to navigate:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.474Z",
+      "level": "INFO",
+      "message": "Expected from date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.477Z",
+      "level": "INFO",
+      "message": "Expected from date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.479Z",
+      "level": "INFO",
+      "message": "Actual from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.482Z",
+      "level": "INFO",
+      "message": "Expected to date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.484Z",
+      "level": "INFO",
+      "message": "Expected to date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.486Z",
+      "level": "INFO",
+      "message": "Actual to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.489Z",
+      "level": "INFO",
+      "message": "Set dates:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.491Z",
+      "level": "INFO",
+      "message": "Waiting for the More filters button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.500Z",
+      "level": "INFO",
+      "message": "Clicked More filters button, waiting for dropdown to appear...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:34.508Z",
+      "level": "INFO",
+      "message": "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:35.579Z",
+      "level": "INFO",
+      "message": "Applied filters from dropdown",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:37.580Z",
+      "level": "INFO",
+      "message": "Clicked Apply button, waiting for data to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:47.587Z",
+      "level": "INFO",
+      "message": "Loading indicator did not appear",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:47.596Z",
+      "level": "INFO",
+      "message": "Loading completed, continuing with data processing...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:47.598Z",
+      "level": "INFO",
+      "message": "Starting to process reservation data...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:49.609Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:51.618Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 2...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:51.622Z",
+      "level": "INFO",
+      "message": "Data count stabilized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:51.626Z",
+      "level": "INFO",
+      "message": "Final reservation count: 10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:51.627Z",
+      "level": "INFO",
+      "message": "Setting results per page to 100...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:54.804Z",
+      "level": "INFO",
+      "message": "Total reservations to fetch: 15",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:23:54.806Z",
+      "level": "INFO",
+      "message": "Processing page 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:03.911Z",
+      "level": "INFO",
+      "message": "Dialog did not appear within timeout, skipping to next reservation",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:04.012Z",
+      "level": "INFO",
+      "message": "Error processing reservation: Execution context was destroyed",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:04.014Z",
+      "level": "INFO",
+      "message": "Error processing page 1: basicData is not defined",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:04.016Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking Reservations:",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-03-13T08:24:04.018Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Attempted to use detached Frame 'B0F34EC153E1516F66FD488CF271227D'.",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:37.497Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:37.501Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:37.502Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:38.842Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:48.204Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:52.802Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:24:52.804Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:07.810Z",
+      "level": "INFO",
+      "message": "Could not find #password-input, trying #passwordControl instead:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:07.821Z",
+      "level": "INFO",
+      "message": "Neither #password-input nor #passwordControl found. Checking page content...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:07.829Z",
+      "level": "INFO",
+      "message": "Page title: Partner Central - Login",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:07.831Z",
+      "level": "ERROR",
+      "message": "Error handling password input:",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-03-13T08:25:07.832Z",
+      "level": "INFO",
+      "message": "Error during password entry:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:07.833Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Password input field not found on the page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:41.548Z",
+      "level": "INFO",
+      "message": "Original start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:41.554Z",
+      "level": "INFO",
+      "message": "Original end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:41.559Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:42.816Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:52.306Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:57.104Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:25:57.106Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:12.109Z",
+      "level": "INFO",
+      "message": "Could not find #password-input, trying #passwordControl instead:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:16.652Z",
+      "level": "INFO",
+      "message": "Password page fully loaded, entering password...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:19.551Z",
+      "level": "INFO",
+      "message": "Password entered, waiting before clicking submit...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:24.559Z",
+      "level": "INFO",
+      "message": "Clicking password continue button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:24.580Z",
+      "level": "INFO",
+      "message": "Waiting for verification page...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:28.981Z",
+      "level": "INFO",
+      "message": "Waiting for verification email...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:49.213Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:49.217Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:49.221Z",
+      "level": "INFO",
+      "message": "Got verification code:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:26:51.844Z",
+      "level": "INFO",
+      "message": "Clicked the verify button successfully!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:01.740Z",
+      "level": "INFO",
+      "message": "Login successful!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:01.754Z",
+      "level": "INFO",
+      "message": "Searching for property: embassy",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:04.509Z",
+      "level": "INFO",
+      "message": "Found property: Embassy Suites by Hilton Atlanta NE Gwinnett Sugarloaf, clicking...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:28.047Z",
+      "level": "INFO",
+      "message": "Looking for Reservations link...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:36.612Z",
+      "level": "INFO",
+      "message": "Successfully navigated to Reservations page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:36.616Z",
+      "level": "INFO",
+      "message": "Waiting for date filters...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:36.625Z",
+      "level": "INFO",
+      "message": "Selecting \"Checking out\" filter...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:38.633Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/1/2025 to 1/3/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:38.637Z",
+      "level": "INFO",
+      "message": "Converting from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:38.641Z",
+      "level": "INFO",
+      "message": "Converting to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.682Z",
+      "level": "INFO",
+      "message": "First month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.684Z",
+      "level": "INFO",
+      "message": "Current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.685Z",
+      "level": "INFO",
+      "message": "Current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.695Z",
+      "level": "INFO",
+      "message": "Target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.699Z",
+      "level": "INFO",
+      "message": "Target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.702Z",
+      "level": "INFO",
+      "message": "Target Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:39.704Z",
+      "level": "INFO",
+      "message": "Total months to navigate (start):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.223Z",
+      "level": "INFO",
+      "message": "Second month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.225Z",
+      "level": "INFO",
+      "message": "End current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.226Z",
+      "level": "INFO",
+      "message": "End current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.227Z",
+      "level": "INFO",
+      "message": "End target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.228Z",
+      "level": "INFO",
+      "message": "End target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.229Z",
+      "level": "INFO",
+      "message": "End Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:42.230Z",
+      "level": "INFO",
+      "message": "Total end months to navigate:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.523Z",
+      "level": "INFO",
+      "message": "Expected from date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.525Z",
+      "level": "INFO",
+      "message": "Expected from date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.526Z",
+      "level": "INFO",
+      "message": "Actual from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.527Z",
+      "level": "INFO",
+      "message": "Expected to date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.528Z",
+      "level": "INFO",
+      "message": "Expected to date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.530Z",
+      "level": "INFO",
+      "message": "Actual to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.541Z",
+      "level": "INFO",
+      "message": "Set dates:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.545Z",
+      "level": "INFO",
+      "message": "Waiting for the More filters button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.554Z",
+      "level": "INFO",
+      "message": "Clicked More filters button, waiting for dropdown to appear...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:44.560Z",
+      "level": "INFO",
+      "message": "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:45.633Z",
+      "level": "INFO",
+      "message": "Applied filters from dropdown",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:47.635Z",
+      "level": "INFO",
+      "message": "Clicked Apply button, waiting for data to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:57.637Z",
+      "level": "INFO",
+      "message": "Loading indicator did not appear",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:57.645Z",
+      "level": "INFO",
+      "message": "Loading completed, continuing with data processing...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:57.647Z",
+      "level": "INFO",
+      "message": "Starting to process reservation data...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:27:59.655Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:28:01.682Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 2...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:28:01.687Z",
+      "level": "INFO",
+      "message": "Data count stabilized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:28:01.692Z",
+      "level": "INFO",
+      "message": "Final reservation count: 10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:28:01.693Z",
+      "level": "INFO",
+      "message": "Setting results per page to 100...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:28:04.877Z",
+      "level": "INFO",
+      "message": "Total reservations to fetch: 15",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:28:04.878Z",
+      "level": "INFO",
+      "message": "Processing page 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:32.575Z",
+      "level": "INFO",
+      "message": "Processed 15 of 15 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:32.586Z",
+      "level": "INFO",
+      "message": "Found total 15 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:32.588Z",
+      "level": "INFO",
+      "message": "Total unique reservations: 15",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:32.589Z",
+      "level": "INFO",
+      "message": "Total processed IDs: 15",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:32.607Z",
+      "level": "INFO",
+      "message": "Saved reservation data to reservations_2025-03-13T08-29-32-590Z.xlsx",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:32.609Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/4/2025 to 1/6/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:33.622Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:42.666Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:47.228Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:29:47.232Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:02.235Z",
+      "level": "INFO",
+      "message": "Could not find #password-input, trying #passwordControl instead:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:06.771Z",
+      "level": "INFO",
+      "message": "Password page fully loaded, entering password...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:09.593Z",
+      "level": "INFO",
+      "message": "Password entered, waiting before clicking submit...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:14.597Z",
+      "level": "INFO",
+      "message": "Clicking password continue button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:14.618Z",
+      "level": "INFO",
+      "message": "Waiting for verification page...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:18.780Z",
+      "level": "INFO",
+      "message": "Waiting for verification email...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:39.001Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:39.004Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:39.005Z",
+      "level": "INFO",
+      "message": "Got verification code:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:40.799Z",
+      "level": "INFO",
+      "message": "Clicked the verify button successfully!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:50.778Z",
+      "level": "INFO",
+      "message": "Login successful!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:50.788Z",
+      "level": "INFO",
+      "message": "Searching for property: embassy",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:30:53.531Z",
+      "level": "INFO",
+      "message": "Found property: Embassy Suites by Hilton Atlanta NE Gwinnett Sugarloaf, clicking...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:14.229Z",
+      "level": "INFO",
+      "message": "Looking for Reservations link...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:21.866Z",
+      "level": "INFO",
+      "message": "Successfully navigated to Reservations page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:21.868Z",
+      "level": "INFO",
+      "message": "Waiting for date filters...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:35.172Z",
+      "level": "INFO",
+      "message": "Selecting \"Checking out\" filter...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:37.183Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/4/2025 to 1/6/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:37.184Z",
+      "level": "INFO",
+      "message": "Converting from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:37.185Z",
+      "level": "INFO",
+      "message": "Converting to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.206Z",
+      "level": "INFO",
+      "message": "First month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.209Z",
+      "level": "INFO",
+      "message": "Current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.211Z",
+      "level": "INFO",
+      "message": "Current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.217Z",
+      "level": "INFO",
+      "message": "Target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.219Z",
+      "level": "INFO",
+      "message": "Target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.220Z",
+      "level": "INFO",
+      "message": "Target Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:38.222Z",
+      "level": "INFO",
+      "message": "Total months to navigate (start):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.701Z",
+      "level": "INFO",
+      "message": "Second month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.702Z",
+      "level": "INFO",
+      "message": "End current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.703Z",
+      "level": "INFO",
+      "message": "End current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.705Z",
+      "level": "INFO",
+      "message": "End target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.706Z",
+      "level": "INFO",
+      "message": "End target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.707Z",
+      "level": "INFO",
+      "message": "End Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:40.709Z",
+      "level": "INFO",
+      "message": "Total end months to navigate:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.982Z",
+      "level": "INFO",
+      "message": "Expected from date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.983Z",
+      "level": "INFO",
+      "message": "Expected from date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.984Z",
+      "level": "INFO",
+      "message": "Actual from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.986Z",
+      "level": "INFO",
+      "message": "Expected to date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.988Z",
+      "level": "INFO",
+      "message": "Expected to date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.989Z",
+      "level": "INFO",
+      "message": "Actual to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.992Z",
+      "level": "INFO",
+      "message": "Set dates:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:42.993Z",
+      "level": "INFO",
+      "message": "Waiting for the More filters button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:43.002Z",
+      "level": "INFO",
+      "message": "Clicked More filters button, waiting for dropdown to appear...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:43.011Z",
+      "level": "INFO",
+      "message": "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:44.071Z",
+      "level": "INFO",
+      "message": "Applied filters from dropdown",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:46.074Z",
+      "level": "INFO",
+      "message": "Clicked Apply button, waiting for data to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:56.078Z",
+      "level": "INFO",
+      "message": "Loading indicator did not appear",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:56.084Z",
+      "level": "INFO",
+      "message": "Loading completed, continuing with data processing...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:56.086Z",
+      "level": "INFO",
+      "message": "Starting to process reservation data...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:31:58.095Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:32:00.097Z",
+      "level": "INFO",
+      "message": "Found 10 reservations on attempt 2...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:32:00.099Z",
+      "level": "INFO",
+      "message": "Data count stabilized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:32:00.102Z",
+      "level": "INFO",
+      "message": "Final reservation count: 10",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:32:00.104Z",
+      "level": "INFO",
+      "message": "Setting results per page to 100...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:32:03.295Z",
+      "level": "INFO",
+      "message": "Total reservations to fetch: 16",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:32:03.298Z",
+      "level": "INFO",
+      "message": "Processing page 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:25.161Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:32.472Z",
+      "level": "INFO",
+      "message": "Processed 15 of 16 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:32.477Z",
+      "level": "INFO",
+      "message": "Found total 15 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:32.479Z",
+      "level": "INFO",
+      "message": "Total unique reservations: 15",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:32.480Z",
+      "level": "INFO",
+      "message": "Total processed IDs: 16",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:32.487Z",
+      "level": "INFO",
+      "message": "Saved reservation data to reservations_2025-03-13T08-33-32-482Z.xlsx",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:32.489Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/7/2025 to 1/7/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:34.637Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:43.976Z",
+      "level": "INFO",
+      "message": "Waiting for page load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:48.820Z",
+      "level": "INFO",
+      "message": "Waiting for password page to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:33:48.821Z",
+      "level": "INFO",
+      "message": "Waiting for password page to fully load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:03.824Z",
+      "level": "INFO",
+      "message": "Could not find #password-input, trying #passwordControl instead:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:08.350Z",
+      "level": "INFO",
+      "message": "Password page fully loaded, entering password...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:11.157Z",
+      "level": "INFO",
+      "message": "Password entered, waiting before clicking submit...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:16.161Z",
+      "level": "INFO",
+      "message": "Clicking password continue button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:16.180Z",
+      "level": "INFO",
+      "message": "Waiting for verification page...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:20.177Z",
+      "level": "INFO",
+      "message": "Waiting for verification email...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:40.738Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:40.741Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:41.161Z",
+      "level": "INFO",
+      "message": "Email body:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:41.163Z",
+      "level": "INFO",
+      "message": "Code match:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:41.165Z",
+      "level": "INFO",
+      "message": "Got verification code:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:43.135Z",
+      "level": "INFO",
+      "message": "Clicked the verify button successfully!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:52.004Z",
+      "level": "INFO",
+      "message": "Login successful!",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:52.016Z",
+      "level": "INFO",
+      "message": "Searching for property: embassy",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:34:54.754Z",
+      "level": "INFO",
+      "message": "Found property: Embassy Suites by Hilton Atlanta NE Gwinnett Sugarloaf, clicking...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:15.296Z",
+      "level": "INFO",
+      "message": "Looking for Reservations link...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:22.816Z",
+      "level": "INFO",
+      "message": "Successfully navigated to Reservations page",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:22.818Z",
+      "level": "INFO",
+      "message": "Waiting for date filters...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:22.826Z",
+      "level": "INFO",
+      "message": "Selecting \"Checking out\" filter...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:24.838Z",
+      "level": "INFO",
+      "message": "Processing date range: 1/7/2025 to 1/7/2025",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:24.839Z",
+      "level": "INFO",
+      "message": "Converting from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:24.841Z",
+      "level": "INFO",
+      "message": "Converting to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.878Z",
+      "level": "INFO",
+      "message": "First month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.880Z",
+      "level": "INFO",
+      "message": "Current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.883Z",
+      "level": "INFO",
+      "message": "Current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.892Z",
+      "level": "INFO",
+      "message": "Target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.894Z",
+      "level": "INFO",
+      "message": "Target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.895Z",
+      "level": "INFO",
+      "message": "Target Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:25.897Z",
+      "level": "INFO",
+      "message": "Total months to navigate (start):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.396Z",
+      "level": "INFO",
+      "message": "Second month header:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.399Z",
+      "level": "INFO",
+      "message": "End current month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.401Z",
+      "level": "INFO",
+      "message": "End current year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.403Z",
+      "level": "INFO",
+      "message": "End target month:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.404Z",
+      "level": "INFO",
+      "message": "End target year:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.406Z",
+      "level": "INFO",
+      "message": "End Date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:28.408Z",
+      "level": "INFO",
+      "message": "Total end months to navigate:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.691Z",
+      "level": "INFO",
+      "message": "Expected from date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.693Z",
+      "level": "INFO",
+      "message": "Expected from date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.694Z",
+      "level": "INFO",
+      "message": "Actual from date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.696Z",
+      "level": "INFO",
+      "message": "Expected to date (with zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.698Z",
+      "level": "INFO",
+      "message": "Expected to date (without zeros):",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.700Z",
+      "level": "INFO",
+      "message": "Actual to date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.706Z",
+      "level": "INFO",
+      "message": "Set dates:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.707Z",
+      "level": "INFO",
+      "message": "Waiting for the More filters button...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.716Z",
+      "level": "INFO",
+      "message": "Clicked More filters button, waiting for dropdown to appear...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:30.723Z",
+      "level": "INFO",
+      "message": "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:31.800Z",
+      "level": "INFO",
+      "message": "Applied filters from dropdown",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:33.802Z",
+      "level": "INFO",
+      "message": "Clicked Apply button, waiting for data to load...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:43.804Z",
+      "level": "INFO",
+      "message": "Loading indicator did not appear",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:43.811Z",
+      "level": "INFO",
+      "message": "Loading completed, continuing with data processing...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:43.813Z",
+      "level": "INFO",
+      "message": "Starting to process reservation data...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:45.821Z",
+      "level": "INFO",
+      "message": "Found 8 reservations on attempt 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:47.824Z",
+      "level": "INFO",
+      "message": "Found 8 reservations on attempt 2...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:47.826Z",
+      "level": "INFO",
+      "message": "Data count stabilized",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:47.831Z",
+      "level": "INFO",
+      "message": "Final reservation count: 8",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:47.832Z",
+      "level": "INFO",
+      "message": "Setting results per page to 100...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:51.032Z",
+      "level": "INFO",
+      "message": "Total reservations to fetch: 8",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:35:51.034Z",
+      "level": "INFO",
+      "message": "Processing page 1...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:36:33.152Z",
+      "level": "INFO",
+      "message": "Found canceled reservation, closing dialog...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:36:34.812Z",
+      "level": "INFO",
+      "message": "Processed 7 of 8 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:36:34.816Z",
+      "level": "INFO",
+      "message": "Found total 7 reservations",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:36:34.818Z",
+      "level": "INFO",
+      "message": "Total unique reservations: 7",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:36:34.820Z",
+      "level": "INFO",
+      "message": "Total processed IDs: 8",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-13T08:36:34.832Z",
+      "level": "INFO",
+      "message": "Saved reservation data to reservations_2025-03-13T08-36-34-822Z.xlsx",
+      "data": null
     }
   ]
 }
