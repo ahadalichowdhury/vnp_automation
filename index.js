@@ -539,7 +539,7 @@ function splitDateRange(startDate, endDate) {
   return chunks
 }
 
-function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 3) {
+function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 2) {
   // Parse dates correctly regardless of MM/DD/YYYY or DD/MM/YYYY format
   const parseDate = (dateStr) => {
     // Check if the date is in MM/DD/YYYY format (our internal format)
@@ -621,7 +621,7 @@ async function loginToExpediaPartner(
   let browser = null
   try {
     browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       defaultViewport: null,
       args: [
         '--start-maximized',
@@ -1047,30 +1047,36 @@ async function loginToExpediaPartner(
       const currentUrl = page.url()
       console.log(`Current tab URL: ${currentUrl}`)
 
-      // Check if the URL contains a hash fragment
-      const hasHashFragment = currentUrl.includes('#')
-
       // Generate date chunks
-      const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 3)
+      const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 2)
       console.log('Date Chunks:', dateChunks)
 
-      // Create an array to store all pages
-      const pages = [page] // Include the original page
+      // Process each date chunk sequentially in the same tab
+      const allReservations = []
 
-      // Open new tabs with each date chunk
-      for (let i = 1; i < dateChunks.length; i++) {
-        // Start from 1 since we'll use the original page for the first chunk
-        const chunk = dateChunks[i]
+      // Helper function to format dates for Expedia's interface
+      const formatDateForProcessing = (dateStr) => {
+        // Input is in MM/DD/YYYY format (our internal format)
+        const [month, day, year] = dateStr.split('/')
+        // Parse date using reliable YYYY-MM-DD format
+        const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`)
+        const formattedDay = date.getDate().toString().padStart(2, '0')
+        const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
+        const formattedYear = date.getFullYear()
+        // Return in DD/MM/YYYY format as expected by Expedia's interface
+        return `${formattedDay}/${formattedMonth}/${formattedYear}`
+      }
 
+      for (const chunk of dateChunks) {
+        logger.info(`Processing chunk: ${chunk.start} to ${chunk.end}`)
+        
         // Format dates for URL parameters (YYYY-MM-DD format for Expedia's API)
         const formatDateForUrl = (dateStr) => {
           // Convert MM/DD/YYYY to a format JavaScript can parse correctly
           const [month, day, year] = dateStr.split('/')
           const date = new Date(`${year}-${month}-${day}`)
           const formattedYear = date.getFullYear()
-          const formattedMonth = (date.getMonth() + 1)
-            .toString()
-            .padStart(2, '0')
+          const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
           const formattedDay = date.getDate().toString().padStart(2, '0')
           return `${formattedYear}-${formattedMonth}-${formattedDay}`
         }
@@ -1078,164 +1084,44 @@ async function loginToExpediaPartner(
         const startParam = formatDateForUrl(chunk.start)
         const endParam = formatDateForUrl(chunk.end)
 
-        let newUrl
-
-        if (hasHashFragment) {
-          // Extract the base URL and the hash fragment
-          const [baseUrl, hashFragment] = currentUrl.split('#')
-
+        // Construct URL for the current chunk
+        let chunkUrl
+        if (currentUrl.includes('#')) {
           try {
-            // Try to parse the hash fragment as JSON
-            // The hash fragment is URL-encoded JSON, so we need to decode it first
-            const decodedFragment = decodeURIComponent(hashFragment)
-            // Remove any 'eyJ' prefix if it exists (common in JWT-like encoding)
-            const jsonStr = decodedFragment.startsWith('eyJ')
-              ? decodedFragment.substring(3)
-              : decodedFragment
-
-            // Parse the JSON
-            let searchCriteria
-            try {
-              searchCriteria = JSON.parse(jsonStr)
-            } catch (e) {
-              // If direct parsing fails, try to extract the searchCriteria object
-              const match = jsonStr.match(/"searchCriteria":(.*?)(?:,"\w+"|$)/)
-              if (match && match[1]) {
-                searchCriteria = { searchCriteria: JSON.parse(match[1]) }
-              } else {
-                throw new Error('Could not parse search criteria')
-              }
-            }
-
-            // Update the date range in the search criteria
-            if (searchCriteria && searchCriteria.searchCriteria) {
-              searchCriteria.searchCriteria.dateFrom = startParam
-              searchCriteria.searchCriteria.dateTo = endParam
-
-              // Re-encode the updated search criteria
-              const updatedFragment = encodeURIComponent(
-                JSON.stringify(searchCriteria)
-              )
-              newUrl = `${baseUrl}#${updatedFragment}`
-            } else {
-              // Fallback if we can't parse the hash fragment
-              newUrl = currentUrl
-              logger.warn('Could not update date range in URL hash fragment')
-            }
+            const baseUrl = currentUrl.split('#')[0]
+            const hash = currentUrl.split('#')[1]
+            const params = new URLSearchParams(hash)
+            params.set('startDate', startParam)
+            params.set('endDate', endParam)
+            chunkUrl = `${baseUrl}#${params.toString()}`
           } catch (error) {
-            // If we can't parse the hash fragment, just use the original URL
             logger.warn(`Error parsing URL hash fragment: ${error.message}`)
-            newUrl = currentUrl
+            chunkUrl = currentUrl
           }
         } else {
-          // If there's no hash fragment, just append the date parameters to the URL
           const separator = currentUrl.includes('?') ? '&' : '?'
-          newUrl = `${currentUrl}${separator}startDate=${startParam}&endDate=${endParam}`
+          chunkUrl = `${currentUrl}${separator}startDate=${startParam}&endDate=${endParam}`
         }
 
-        console.log(`Opening new tab: ${newUrl}`)
+        // Navigate to the URL for current chunk
+        logger.info(`Navigating to: ${chunkUrl}`)
+        await page.goto(chunkUrl, { waitUntil: 'networkidle2' })
+        await delay(3000) // Wait for page to stabilize
 
-        const newPage = await browser.newPage()
-        await newPage.goto(newUrl, { waitUntil: 'networkidle2' })
-
-        // Check if we landed on an error page
-        const isErrorPage = await newPage.evaluate(() => {
-          return (
-            window.location.href.includes('/Error/Error') ||
-            document.title.includes('Error') ||
-            document.body.textContent.includes('Sorry, an error has occurred')
-          )
-        })
-
-        if (isErrorPage) {
-          logger.error(`Landed on error page for URL: ${newUrl}`)
-
-          // Try to navigate directly to the reservations page
-          logger.info(
-            'Attempting to navigate directly to the reservations page...'
-          )
-
-          // Extract the hotel ID from the original URL if possible
-          let hotelId = ''
-          try {
-            const htidMatch = currentUrl.match(/htid=(\d+)/)
-            if (htidMatch && htidMatch[1]) {
-              hotelId = htidMatch[1]
-            }
-          } catch (e) {
-            logger.error(`Error extracting hotel ID: ${e.message}`)
-          }
-
-          // Construct a direct URL to the reservations page
-          const directUrl = hotelId
-            ? `https://apps.expediapartnercentral.com/lodging/bookings?htid=${hotelId}`
-            : 'https://apps.expediapartnercentral.com/lodging/bookings'
-
-          logger.info(`Navigating to: ${directUrl}`)
-          await newPage.goto(directUrl, { waitUntil: 'networkidle2' })
-
-          // Wait for the page to load
-          await delay(5000)
-        }
-
-        // Log the final URL
-        const finalUrl = await newPage.url()
-        logger.info(`Tab ${i} final URL: ${finalUrl}`)
-
-        pages.push(newPage)
-      }
-
-      console.log('All tabs opened with respective date ranges.')
-
-      // Process all tabs in parallel
-      const allReservationsPromises = pages.map(async (currentPage, index) => {
-        const chunk = dateChunks[index]
-
-        // Ensure dates are in the correct format (DD/MM/YYYY) for processing in Expedia's interface
-        const formatDateForProcessing = (dateStr) => {
-          // Input is in MM/DD/YYYY format (our internal format)
-          const [month, day, year] = dateStr.split('/')
-          // Parse date using reliable YYYY-MM-DD format
-          const date = new Date(
-            `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-          )
-          const formattedDay = date.getDate().toString().padStart(2, '0')
-          const formattedMonth = (date.getMonth() + 1)
-            .toString()
-            .padStart(2, '0')
-          const formattedYear = date.getFullYear()
-          // Return in DD/MM/YYYY format as expected by Expedia's interface
-          return `${formattedDay}/${formattedMonth}/${formattedYear}`
-        }
-
+        // Process the current chunk
         const formattedStart = formatDateForProcessing(chunk.start)
         const formattedEnd = formatDateForProcessing(chunk.end)
+        
+        logger.info(`Processing date range: ${formattedStart} to ${formattedEnd}`)
+        const chunkReservations = await processReservationsPage(page, formattedStart, formattedEnd)
+        allReservations.push(...chunkReservations)
+      }
 
-        logger.info(
-          `Processing tab ${
-            index + 1
-          } with date range: ${formattedStart} to ${formattedEnd}`
-        )
-        return processReservationsPage(
-          currentPage,
-          formattedStart,
-          formattedEnd
-        )
-      })
-
-      // Wait for all tabs to complete processing
-      const allTabsResults = await Promise.all(allReservationsPromises)
-
-      // Combine all reservations from all tabs
-      const allReservations = allTabsResults.flat()
-
-      logger.info(
-        `Found total ${allReservations.length} reservations across all tabs`
-      )
+      logger.info(`Found total ${allReservations.length} reservations across all chunks`)
 
       // Get current date and time for filename
       const now = new Date()
-      const timestamp = now.toISOString().replace(/[:.]/g, '-') // Format: 2024-03-14T10-30-15-000Z
+      const timestamp = now.toISOString().replace(/[:.]/g, '-')
 
       // Save all reservations to Excel with timestamp
       const workbook = xlsx.utils.book_new()
