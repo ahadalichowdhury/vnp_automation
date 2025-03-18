@@ -52213,6 +52213,36 @@
       "level": "INFO",
       "message": "Saved reservation data to reservations_2025-03-17T11-14-05-671Z.xlsx",
       "data": null
+    },
+    {
+      "timestamp": "2025-03-17T11:22:24.456Z",
+      "level": "INFO",
+      "message": "Server running at http://localhost:3000",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-17T11:22:47.212Z",
+      "level": "INFO",
+      "message": "Validated start date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-17T11:22:47.230Z",
+      "level": "INFO",
+      "message": "Validated end date:",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-17T11:22:49.485Z",
+      "level": "INFO",
+      "message": "Navigating to Expedia Partner Central...",
+      "data": null
+    },
+    {
+      "timestamp": "2025-03-17T11:22:54.881Z",
+      "level": "ERROR",
+      "message": "Error finding/clicking property: Navigating frame was detached",
+      "data": null
     }
   ]
 }
