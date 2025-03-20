@@ -1029,7 +1029,7 @@ async function loginToExpediaPartner(
           waitUntil: 'networkidle0',
           timeout: 30000,
         }),
-        delay(5000),
+        delay(8000),
       ])
 
       logger.info('Successfully navigated to Reservations page')
@@ -1038,7 +1038,7 @@ async function loginToExpediaPartner(
       logger.info('Waiting for date filters...')
       await page.waitForSelector('input[type="radio"][name="dateTypeFilter"]', {
         visible: true,
-        timeout: 30000,
+        timeout: 80000,
       })
       ///////////////////////////////////
       //new tab opening
@@ -1444,7 +1444,7 @@ async function processReservationsPage(page, start_date, end_date) {
           visible: true,
           timeout: 30000,
         })
-        await delay(2000)
+        await delay(5000)
 
         // Get reservations from current page
         const rows = await page.$$('table.fds-data-table tbody tr')
