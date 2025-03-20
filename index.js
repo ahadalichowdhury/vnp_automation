@@ -1027,7 +1027,7 @@ async function loginToExpediaPartner(
       await Promise.all([
         page.waitForNavigation({
           waitUntil: 'networkidle0',
-          timeout: 30000,
+          timeout: 80000,
         }),
         delay(8000),
       ])
