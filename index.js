@@ -177,7 +177,8 @@ async function setDateRange(page, start_date, end_date) {
     // Convert input dates to both formats
     const expectedFromDateWithZeros = formatDateWithZeros(internalStartDate)
     const expectedToDateWithZeros = formatDateWithZeros(internalEndDate)
-    const expectedFromDateWithoutZeros = formatDateWithoutZeros(internalStartDate)
+    const expectedFromDateWithoutZeros =
+      formatDateWithoutZeros(internalStartDate)
     const expectedToDateWithoutZeros = formatDateWithoutZeros(internalEndDate)
 
     logger.info(
@@ -423,18 +424,18 @@ async function setDateRange(page, start_date, end_date) {
 
           if (isExpediaFormat(startDateStr)) {
             // DD/MM/YYYY format
-            [startDay, startMonth, startYear] = startDateStr.split('/')
+            ;[startDay, startMonth, startYear] = startDateStr.split('/')
           } else {
             // MM/DD/YYYY format
-            [startMonth, startDay, startYear] = startDateStr.split('/')
+            ;[startMonth, startDay, startYear] = startDateStr.split('/')
           }
 
           if (isExpediaFormat(endDateStr)) {
             // DD/MM/YYYY format
-            [endDay, endMonth, endYear] = endDateStr.split('/')
+            ;[endDay, endMonth, endYear] = endDateStr.split('/')
           } else {
             // MM/DD/YYYY format
-            [endMonth, endDay, endYear] = endDateStr.split('/')
+            ;[endMonth, endDay, endYear] = endDateStr.split('/')
           }
 
           // Re-open the date picker
@@ -656,7 +657,6 @@ async function loginToExpediaPartner(
     })
     // Wait for email input
     await page.waitForSelector('#emailControl')
-
 
     // Type email slowly, character by character
     for (let char of email) {
@@ -1059,7 +1059,9 @@ async function loginToExpediaPartner(
         // Input is in MM/DD/YYYY format (our internal format)
         const [month, day, year] = dateStr.split('/')
         // Parse date using reliable YYYY-MM-DD format
-        const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`)
+        const date = new Date(
+          `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+        )
         const formattedDay = date.getDate().toString().padStart(2, '0')
         const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
         const formattedYear = date.getFullYear()
@@ -1069,14 +1071,16 @@ async function loginToExpediaPartner(
 
       for (const chunk of dateChunks) {
         logger.info(`Processing chunk: ${chunk.start} to ${chunk.end}`)
-        
+
         // Format dates for URL parameters (YYYY-MM-DD format for Expedia's API)
         const formatDateForUrl = (dateStr) => {
           // Convert MM/DD/YYYY to a format JavaScript can parse correctly
           const [month, day, year] = dateStr.split('/')
           const date = new Date(`${year}-${month}-${day}`)
           const formattedYear = date.getFullYear()
-          const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
+          const formattedMonth = (date.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')
           const formattedDay = date.getDate().toString().padStart(2, '0')
           return `${formattedYear}-${formattedMonth}-${formattedDay}`
         }
@@ -1111,13 +1115,21 @@ async function loginToExpediaPartner(
         // Process the current chunk
         const formattedStart = formatDateForProcessing(chunk.start)
         const formattedEnd = formatDateForProcessing(chunk.end)
-        
-        logger.info(`Processing date range: ${formattedStart} to ${formattedEnd}`)
-        const chunkReservations = await processReservationsPage(page, formattedStart, formattedEnd)
+
+        logger.info(
+          `Processing date range: ${formattedStart} to ${formattedEnd}`
+        )
+        const chunkReservations = await processReservationsPage(
+          page,
+          formattedStart,
+          formattedEnd
+        )
         allReservations.push(...chunkReservations)
       }
 
-      logger.info(`Found total ${allReservations.length} reservations across all chunks`)
+      logger.info(
+        `Found total ${allReservations.length} reservations across all chunks`
+      )
 
       // Get current date and time for filename
       const now = new Date()
@@ -1174,6 +1186,18 @@ async function loginToExpediaPartner(
       xlsx.utils.book_append_sheet(workbook, ws, 'Reservations')
       xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`)
       logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`)
+
+      // Log summary of processed reservations
+      logger.info(`Total reservations exported: ${allReservations.length}`)
+      const processedDates = new Set(allReservations.map((r) => r.checkInDate))
+      // logger.info(
+      //   `Successfully processed dates: ${Array.from(processedDates).join(', ')}`
+      // )
+      if (processedDates.size === 0) {
+        logger.warn(
+          'Warning: No dates were successfully processed in this export'
+        )
+      }
 
       // Close the browser
       // await browser.close()
@@ -1531,27 +1555,108 @@ async function processReservationsPage(page, start_date, end_date) {
             })
 
             if (isCanceled) {
-              logger.info('Found canceled reservation, closing dialog...')
+              logger.info(
+                'Found canceled reservation, attempting to close dialog...'
+              )
               try {
-                // Try multiple methods to close the dialog
-                await Promise.race([
-                  // Method 1: Click the close button
-                  page.click('.fds-dialog-header button.dialog-close'),
-                  // Method 2: Use JavaScript to click the close button
-                  page.evaluate(() => {
-                    const closeButton = document.querySelector(
-                      '.fds-dialog-header button.dialog-close'
+                // First, ensure the dialog is visible
+                await page.waitForSelector('.fds-dialog-header', {
+                  visible: true,
+                  timeout: 5000,
+                })
+
+                // Try each closing method sequentially with proper waits and checks
+                const closingMethods = [
+                  // Method 1: Click the close button using page.click with waitForSelector
+                  async () => {
+                    const closeButton = await page.waitForSelector(
+                      '.fds-dialog-header button.dialog-close',
+                      {
+                        visible: true,
+                        timeout: 2000,
+                      }
                     )
-                    if (closeButton) closeButton.click()
-                  }),
-                  // Method 3: Press Escape key
-                  page.keyboard.press('Escape'),
-                ])
-                await delay(1500) // Wait for dialog to close
+                    if (closeButton) {
+                      await closeButton.click()
+                      return true
+                    }
+                    return false
+                  },
+                  // Method 2: Use JavaScript click with explicit visibility check
+                  async () => {
+                    const isSuccess = await page.evaluate(() => {
+                      const closeButton = document.querySelector(
+                        '.fds-dialog-header button.dialog-close'
+                      )
+                      if (
+                        closeButton &&
+                        window.getComputedStyle(closeButton).display !== 'none'
+                      ) {
+                        closeButton.click()
+                        return true
+                      }
+                      return false
+                    })
+                    return isSuccess
+                  },
+                  // Method 3: Try alternative close button selector
+                  async () => {
+                    const altCloseButton = await page.$(
+                      '.fds-dialog button[aria-label="Close"]'
+                    )
+                    if (altCloseButton) {
+                      await altCloseButton.click()
+                      return true
+                    }
+                    return false
+                  },
+                  // Method 4: Press Escape key as last resort
+                  async () => {
+                    await page.keyboard.press('Escape')
+                    return true
+                  },
+                ]
+
+                // Try each method until one succeeds
+                let dialogClosed = false
+                for (const method of closingMethods) {
+                  try {
+                    const success = await method()
+                    if (success) {
+                      // Wait for dialog to be hidden
+                      await page
+                        .waitForSelector('.fds-dialog-header', {
+                          hidden: true,
+                          timeout: 3000,
+                        })
+                        .catch(() => {})
+
+                      // Double check if dialog is really gone
+                      const dialogStillVisible = await page.$(
+                        '.fds-dialog-header'
+                      )
+                      if (!dialogStillVisible) {
+                        dialogClosed = true
+                        break
+                      }
+                    }
+                  } catch (methodError) {
+                    logger.debug(
+                      `Dialog close method failed: ${methodError.message}`
+                    )
+                    continue
+                  }
+                }
+
+                if (!dialogClosed) {
+                  throw new Error('All dialog closing methods failed')
+                }
+
+                await delay(1000) // Short stabilization delay
                 continue // Skip to next reservation
               } catch (error) {
                 logger.warn(
-                  'Warning: Could not close canceled reservation dialog'
+                  `Warning: Could not close canceled reservation dialog: ${error.message}`
                 )
                 continue
               }
@@ -1773,8 +1878,15 @@ async function processReservationsPage(page, start_date, end_date) {
     }
 
     logger.info(
-      `Found total ${pageReservations.length} reservations on this tab`
+      `Date scraping completed for ${start_date} to ${end_date}. Found total ${pageReservations.length} reservations on this tab`
     )
+
+    // Log if no reservations were found for this date range
+    if (pageReservations.length === 0) {
+      logger.warn(
+        `No reservations found for date range: ${start_date} to ${end_date}. This date range may be missing data.`
+      )
+    }
     return pageReservations
   } catch (error) {
     logger.error(`Error processing tab: ${error.message}`)
