@@ -540,7 +540,7 @@ function splitDateRange(startDate, endDate) {
   return chunks
 }
 
-function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 2) {
+function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 1) {
   // Parse dates correctly regardless of MM/DD/YYYY or DD/MM/YYYY format
   const parseDate = (dateStr) => {
     // Check if the date is in MM/DD/YYYY format (our internal format)
@@ -579,6 +579,16 @@ function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 2) {
   console.log(`Parsed start date: ${startDate.toISOString()}`)
   console.log(`Parsed end date: ${endDate.toISOString()}`)
 
+  // If start and end dates are the same, return a single chunk with same dates
+  if (startDate.getTime() === endDate.getTime()) {
+    return [
+      {
+        start: start_date,
+        end: end_date,
+      },
+    ]
+  }
+
   const dateChunks = []
   let currentDate = new Date(startDate)
 
@@ -587,7 +597,7 @@ function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 2) {
     const nextDate = new Date(currentDate)
     nextDate.setDate(currentDate.getDate() + chunkSize - 1)
     if (nextDate > endDate) {
-      nextDate.setDate(endDate.getDate())
+      nextDate.setTime(endDate.getTime()) // Use exact end date time
     }
 
     // Format dates as MM/DD/YYYY for internal consistency
@@ -1048,7 +1058,7 @@ async function loginToExpediaPartner(
       console.log(`Current tab URL: ${currentUrl}`)
 
       // Generate date chunks
-      const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 2)
+      const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 1)
       console.log('Date Chunks:', dateChunks)
 
       // Process each date chunk sequentially in the same tab
@@ -1153,6 +1163,7 @@ async function loginToExpediaPartner(
           'Has Card Info',
           'Has Payment Info',
           'Total Guest Payment',
+          'Cancellation Fee',
           'Expedia Compensation',
           'Total Payout',
           'Amount to charge/refund',
@@ -1174,6 +1185,7 @@ async function loginToExpediaPartner(
           res.hasCardInfo ? 'Yes' : 'No',
           res.hasPaymentInfo ? 'Yes' : 'No',
           res.totalGuestPayment || 'N/A',
+          res.cancellationFee || 'N/A',
           res.expediaCompensation || 'N/A',
           res.totalPayout || 'N/A',
           res.amountToChargeOrRefund || 'N/A',
@@ -1556,7 +1568,7 @@ async function processReservationsPage(page, start_date, end_date) {
 
             if (isCanceled) {
               logger.info(
-                'Found canceled reservation, attempting to close dialog...'
+                'Found canceled reservation, extracting payment information...'
               )
               try {
                 // First, ensure the dialog is visible
@@ -1564,6 +1576,54 @@ async function processReservationsPage(page, start_date, end_date) {
                   visible: true,
                   timeout: 5000,
                 })
+
+                // Wait for payment summary section to be visible
+                await page.waitForSelector('.fds-card-header-title', {
+                  visible: true,
+                  timeout: 5000,
+                })
+
+                // Extract payment information from canceled reservation
+                const paymentInfo = await page.evaluate(() => {
+                  const getCurrencyValue = (title) => {
+                    // Find all section titles
+                    const sections = Array.from(document.querySelectorAll('.sidePanelSectionTitle'));
+                    const section = sections.find(el => el.textContent.trim() === title);
+                    if (!section) return '0.00';
+                    
+                    // Get the currency value from the next cell
+                    const valueCell = section.closest('.fds-grid').querySelector('.fds-currency-value');
+                    return valueCell ? valueCell.textContent.trim() : '0.00';
+                  }
+
+                  return {
+                    cancellationFee: getCurrencyValue('Cancellation fee'),
+                    expediaCompensation: getCurrencyValue('Expedia compensation'),
+                    totalPayout: getCurrencyValue('Your total payout')
+                  }
+                })
+
+                logger.info('Extracted payment info for canceled reservation:', paymentInfo)
+
+                // Add the payment information to the basic data with canceled-specific fields
+                const canceledReservation = {
+                  ...basicData,
+                  cardNumber: 'N/A',
+                  expiryDate: 'N/A',
+                  cvv: 'N/A',
+                  hasCardInfo: false,
+                  hasPaymentInfo: true,
+                  totalGuestPayment: '0.00',
+                  cancellationFee: paymentInfo.cancellationFee,
+                  expediaCompensation: paymentInfo.expediaCompensation,
+                  totalPayout: paymentInfo.totalPayout,
+                  amountToChargeOrRefund: paymentInfo.cancellationFee,
+                  reasonOfCharge: 'Cancellation Fee',
+                  status: 'Cancelled'
+                }
+
+                pageReservations.push(canceledReservation)
+                logger.info('Added canceled reservation to results:', canceledReservation)
 
                 // Try each closing method sequentially with proper waits and checks
                 const closingMethods = [
@@ -1863,6 +1923,15 @@ async function processReservationsPage(page, start_date, end_date) {
         // Check if there's a next page
         hasMore = await hasNextPage()
         if (hasMore) {
+          // Scroll down smoothly before clicking next page
+          await page.evaluate(() => {
+            window.scrollBy({
+              top: 300,
+              behavior: 'smooth',
+            })
+          })
+          await delay(1500) // Wait for scroll animation
+
           await page.click('.fds-pagination-button.next button')
           await delay(2000)
           currentPage++
