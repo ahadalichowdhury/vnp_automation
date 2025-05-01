@@ -53,6 +53,35 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 let verificationCode = ''
 
+const getDataFromSheet = async () => {
+  const workbook = xlsx.readFile('VNP_sheet.xlsx');
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const sheetData = xlsx.utils.sheet_to_json(sheet, { defval: '' });
+
+  console.log(sheetData);
+
+  const hashMap = {};
+  const hotels = [0];
+  let cnt = 0;
+
+  for (const item of sheetData) {
+    if (!hashMap[item['Property Name']]) {
+      hashMap[item['Property Name']] = ++cnt;
+      hotels.push({
+        name: item['Property Name'],
+        idList: [item['Reservation ID']]
+      });
+    } else {
+      hotels[hashMap[item['Property Name']]].idList.push(item['Reservation ID']);
+    }
+  }
+
+  hotels.splice(0, 1);
+
+  return hotels;
+}
+
 // Add this helper function at the top level
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -110,516 +139,516 @@ const randomDelay = () => Math.floor(Math.random() * (3000 - 1000) + 1000)
 // Add these helper functions for date calculations
 
 // Calculate year and month differences for navigation
-const calculateMonthsToNavigate = (
-  currentMonth,
-  currentYear,
-  targetMonth,
-  targetYear,
-  months
-) => {
-  // Convert years to months since epoch
-  const currentMonthsSinceEpoch =
-    parseInt(currentYear) * 12 + months[currentMonth]
-  const targetMonthsSinceEpoch = targetYear * 12 + months[targetMonth]
+// const calculateMonthsToNavigate = (
+//   currentMonth,
+//   currentYear,
+//   targetMonth,
+//   targetYear,
+//   months
+// ) => {
+//   // Convert years to months since epoch
+//   const currentMonthsSinceEpoch =
+//     parseInt(currentYear) * 12 + months[currentMonth]
+//   const targetMonthsSinceEpoch = targetYear * 12 + months[targetMonth]
 
-  // The difference is how many months we need to navigate
-  return currentMonthsSinceEpoch - targetMonthsSinceEpoch
-}
+//   // The difference is how many months we need to navigate
+//   return currentMonthsSinceEpoch - targetMonthsSinceEpoch
+// }
 
 // Modify the date selection part in loginToExpediaPartner function
-async function setDateRange(page, start_date, end_date) {
-  try {
-    // Check if the input dates are already in DD/MM/YYYY format (from formatDateForProcessing)
-    const isExpediaFormat = (dateStr) => {
-      // If the date is already in DD/MM/YYYY format, the first part should be a day (1-31)
-      const parts = dateStr.split('/')
-      if (parts.length !== 3) return false
-      const firstPart = parseInt(parts[0])
-      return firstPart >= 1 && firstPart <= 31 && parts[0].length <= 2
-    }
+// async function setDateRange(page, start_date, end_date) {
+//   try {
+//     // Check if the input dates are already in DD/MM/YYYY format (from formatDateForProcessing)
+//     const isExpediaFormat = (dateStr) => {
+//       // If the date is already in DD/MM/YYYY format, the first part should be a day (1-31)
+//       const parts = dateStr.split('/')
+//       if (parts.length !== 3) return false
+//       const firstPart = parseInt(parts[0])
+//       return firstPart >= 1 && firstPart <= 31 && parts[0].length <= 2
+//     }
 
-    // Convert from DD/MM/YYYY (Expedia format) to MM/DD/YYYY (internal format) if needed
-    const convertToInternalFormat = (dateStr) => {
-      if (!isExpediaFormat(dateStr)) return dateStr // Already in MM/DD/YYYY format
-      // Input is in DD/MM/YYYY format (Expedia format)
-      const [day, month, year] = dateStr.split('/')
-      // Return in MM/DD/YYYY format for internal processing
-      return `${month}/${day}/${year}`
-    }
+//     // Convert from DD/MM/YYYY (Expedia format) to MM/DD/YYYY (internal format) if needed
+//     const convertToInternalFormat = (dateStr) => {
+//       if (!isExpediaFormat(dateStr)) return dateStr // Already in MM/DD/YYYY format
+//       // Input is in DD/MM/YYYY format (Expedia format)
+//       const [day, month, year] = dateStr.split('/')
+//       // Return in MM/DD/YYYY format for internal processing
+//       return `${month}/${day}/${year}`
+//     }
 
-    // Ensure we're working with internal format (MM/DD/YYYY) for processing
-    const internalStartDate = convertToInternalFormat(start_date)
-    const internalEndDate = convertToInternalFormat(end_date)
+//     // Ensure we're working with internal format (MM/DD/YYYY) for processing
+//     const internalStartDate = convertToInternalFormat(start_date)
+//     const internalEndDate = convertToInternalFormat(end_date)
 
-    // Format date with leading zeros - keeping MM/DD/YYYY format for internal use
-    const formatDateWithZeros = (dateStr) => {
-      // Input is in MM/DD/YYYY format (internal format)
-      const [month, day, year] = dateStr.split('/')
-      const paddedDay = day.padStart(2, '0')
-      const paddedMonth = month.padStart(2, '0')
-      console.log('Month:', month)
-      console.log('Day:', day)
-      console.log('Year:', year)
-      console.log('padded month', paddedMonth)
-      console.log('padded day', paddedDay)
+//     // Format date with leading zeros - keeping MM/DD/YYYY format for internal use
+//     const formatDateWithZeros = (dateStr) => {
+//       // Input is in MM/DD/YYYY format (internal format)
+//       const [month, day, year] = dateStr.split('/')
+//       const paddedDay = day.padStart(2, '0')
+//       const paddedMonth = month.padStart(2, '0')
+//       console.log('Month:', month)
+//       console.log('Day:', day)
+//       console.log('Year:', year)
+//       console.log('padded month', paddedMonth)
+//       console.log('padded day', paddedDay)
 
-      // Return in MM/DD/YYYY format to maintain consistency
-      return `${paddedMonth}/${paddedDay}/${year}`
-    }
+//       // Return in MM/DD/YYYY format to maintain consistency
+//       return `${paddedMonth}/${paddedDay}/${year}`
+//     }
 
-    // Format date without leading zeros - keeping MM/DD/YYYY format
-    const formatDateWithoutZeros = (dateStr) => {
-      // Input is in MM/DD/YYYY format (internal format)
-      const [month, day, year] = dateStr.split('/')
-      return `${parseInt(month)}/${parseInt(day)}/${year}`
-    }
+//     // Format date without leading zeros - keeping MM/DD/YYYY format
+//     const formatDateWithoutZeros = (dateStr) => {
+//       // Input is in MM/DD/YYYY format (internal format)
+//       const [month, day, year] = dateStr.split('/')
+//       return `${parseInt(month)}/${parseInt(day)}/${year}`
+//     }
 
-    // Convert input dates to both formats
-    const expectedFromDateWithZeros = formatDateWithZeros(internalStartDate)
-    const expectedToDateWithZeros = formatDateWithZeros(internalEndDate)
-    const expectedFromDateWithoutZeros =
-      formatDateWithoutZeros(internalStartDate)
-    const expectedToDateWithoutZeros = formatDateWithoutZeros(internalEndDate)
+//     // Convert input dates to both formats
+//     const expectedFromDateWithZeros = formatDateWithZeros(internalStartDate)
+//     const expectedToDateWithZeros = formatDateWithZeros(internalEndDate)
+//     const expectedFromDateWithoutZeros =
+//       formatDateWithoutZeros(internalStartDate)
+//     const expectedToDateWithoutZeros = formatDateWithoutZeros(internalEndDate)
 
-    logger.info(
-      'Converting from date:',
-      start_date,
-      'to:',
-      expectedFromDateWithZeros
-    )
-    logger.info('Converting to date:', end_date, 'to:', expectedToDateWithZeros)
+//     logger.info(
+//       'Converting from date:',
+//       start_date,
+//       'to:',
+//       expectedFromDateWithZeros
+//     )
+//     logger.info('Converting to date:', end_date, 'to:', expectedToDateWithZeros)
 
-    // Click the From date input to open calendar
-    const fromDateInput = await page.$(
-      '.from-input-label input.fds-field-input'
-    )
-    await fromDateInput.click()
-    await new Promise((r) => setTimeout(r, 1000))
+//     // Click the From date input to open calendar
+//     const fromDateInput = await page.$(
+//       '.from-input-label input.fds-field-input'
+//     )
+//     await fromDateInput.click()
+//     await new Promise((r) => setTimeout(r, 1000))
 
-    // Step 1: Get current year and month from first calendar
-    const firstMonthHeader = await page.$eval('.first-month h2', (el) =>
-      el.textContent.trim()
-    )
-    logger.info('First month header:', firstMonthHeader)
-    const [currentMonth, currentYear] = firstMonthHeader.split(' ')
-    logger.info('Current month:', currentMonth)
-    logger.info('Current year:', currentYear)
-    // Convert MM/DD/YYYY to a format JavaScript can parse correctly
-    const [month, day, year] = internalStartDate.split('/')
-    const targetDate = new Date(`${year}-${month}-${day}`)
-    const targetYear = targetDate.getFullYear()
-    const targetMonth = targetDate.toLocaleString('en-US', { month: 'long' })
-    logger.info('Target month:', targetMonth)
-    logger.info('Target year:', targetYear)
-    logger.info('Target Date:', targetDate)
-    // Validate year
-    if (targetYear > parseInt(currentYear)) {
-      throw new Error('Target year is greater than current year')
-    }
+//     // Step 1: Get current year and month from first calendar
+//     const firstMonthHeader = await page.$eval('.first-month h2', (el) =>
+//       el.textContent.trim()
+//     )
+//     logger.info('First month header:', firstMonthHeader)
+//     const [currentMonth, currentYear] = firstMonthHeader.split(' ')
+//     logger.info('Current month:', currentMonth)
+//     logger.info('Current year:', currentYear)
+//     // Convert MM/DD/YYYY to a format JavaScript can parse correctly
+//     const [month, day, year] = internalStartDate.split('/')
+//     const targetDate = new Date(`${year}-${month}-${day}`)
+//     const targetYear = targetDate.getFullYear()
+//     const targetMonth = targetDate.toLocaleString('en-US', { month: 'long' })
+//     logger.info('Target month:', targetMonth)
+//     logger.info('Target year:', targetYear)
+//     logger.info('Target Date:', targetDate)
+//     // Validate year
+//     if (targetYear > parseInt(currentYear)) {
+//       throw new Error('Target year is greater than current year')
+//     }
 
-    // Calculate months to navigate for start date
-    const totalMonthsToNavigate = calculateMonthsToNavigate(
-      currentMonth,
-      currentYear,
-      targetMonth,
-      targetYear,
-      {
-        January: 1,
-        February: 2,
-        March: 3,
-        April: 4,
-        May: 5,
-        June: 6,
-        July: 7,
-        August: 8,
-        September: 9,
-        October: 10,
-        November: 11,
-        December: 12,
-      }
-    )
+//     // Calculate months to navigate for start date
+//     const totalMonthsToNavigate = calculateMonthsToNavigate(
+//       currentMonth,
+//       currentYear,
+//       targetMonth,
+//       targetYear,
+//       {
+//         January: 1,
+//         February: 2,
+//         March: 3,
+//         April: 4,
+//         May: 5,
+//         June: 6,
+//         July: 7,
+//         August: 8,
+//         September: 9,
+//         October: 10,
+//         November: 11,
+//         December: 12,
+//       }
+//     )
 
-    logger.info('Total months to navigate (start):', totalMonthsToNavigate)
+//     logger.info('Total months to navigate (start):', totalMonthsToNavigate)
 
-    // Navigate months for start date
-    const navigationButtons = await page.$$('.fds-datepicker-navigation button')
-    const navigationButton =
-      totalMonthsToNavigate > 0
-        ? navigationButtons[0] // prev button for going back in time
-        : navigationButtons[1] // next button for going forward
+//     // Navigate months for start date
+//     const navigationButtons = await page.$$('.fds-datepicker-navigation button')
+//     const navigationButton =
+//       totalMonthsToNavigate > 0
+//         ? navigationButtons[0] // prev button for going back in time
+//         : navigationButtons[1] // next button for going forward
 
-    for (let i = 0; i < Math.abs(totalMonthsToNavigate); i++) {
-      await navigationButton.click()
-      await new Promise((r) => setTimeout(r, 200))
-    }
+//     for (let i = 0; i < Math.abs(totalMonthsToNavigate); i++) {
+//       await navigationButton.click()
+//       await new Promise((r) => setTimeout(r, 200))
+//     }
 
-    // Select day (day - 1 for index)
-    const targetDay = targetDate.getDate()
-    await page.evaluate((day) => {
-      const dayButtons = document.querySelectorAll(
-        '.first-month .fds-datepicker-day'
-      )
-      const dayIndex = day - 1
-      if (dayButtons[dayIndex] && !dayButtons[dayIndex].disabled) {
-        dayButtons[dayIndex].click()
-      }
-    }, targetDay)
+//     // Select day (day - 1 for index)
+//     const targetDay = targetDate.getDate()
+//     await page.evaluate((day) => {
+//       const dayButtons = document.querySelectorAll(
+//         '.first-month .fds-datepicker-day'
+//       )
+//       const dayIndex = day - 1
+//       if (dayButtons[dayIndex] && !dayButtons[dayIndex].disabled) {
+//         dayButtons[dayIndex].click()
+//       }
+//     }, targetDay)
 
-    // Handle end date selection
-    await new Promise((r) => setTimeout(r, 1000))
+//     // Handle end date selection
+//     await new Promise((r) => setTimeout(r, 1000))
 
-    // Wait for and click the To date input
-    await page.waitForSelector('.to-input-label input.fds-field-input', {
-      visible: true,
-    })
-    const toDateInput = await page.$('.to-input-label input.fds-field-input')
-    await page.evaluate((el) => el.click(), toDateInput)
-    await new Promise((r) => setTimeout(r, 1000))
+//     // Wait for and click the To date input
+//     await page.waitForSelector('.to-input-label input.fds-field-input', {
+//       visible: true,
+//     })
+//     const toDateInput = await page.$('.to-input-label input.fds-field-input')
+//     await page.evaluate((el) => el.click(), toDateInput)
+//     await new Promise((r) => setTimeout(r, 1000))
 
-    // Make sure calendar is visible before proceeding
-    await page.waitForSelector('.second-month h2', { visible: true })
+//     // Make sure calendar is visible before proceeding
+//     await page.waitForSelector('.second-month h2', { visible: true })
 
-    const secondMonthHeader = await page.$eval('.second-month h2', (el) =>
-      el.textContent.trim()
-    )
-    logger.info('Second month header:', secondMonthHeader)
+//     const secondMonthHeader = await page.$eval('.second-month h2', (el) =>
+//       el.textContent.trim()
+//     )
+//     logger.info('Second month header:', secondMonthHeader)
 
-    const [endCurrentMonth, endCurrentYear] = secondMonthHeader.split(' ')
-    logger.info('End current month:', endCurrentMonth)
-    logger.info('End current year:', endCurrentYear)
-    // Convert MM/DD/YYYY to a format JavaScript can parse correctly
-    const [endMonth, endDay, endYear] = internalEndDate.split('/')
-    const endDate = new Date(`${endYear}-${endMonth}-${endDay}`)
-    const endTargetYear = endDate.getFullYear()
-    const endTargetMonth = endDate.toLocaleString('en-US', { month: 'long' })
-    logger.info('End target month:', endTargetMonth)
-    logger.info('End target year:', endTargetYear)
-    logger.info('End Date:', endDate)
+//     const [endCurrentMonth, endCurrentYear] = secondMonthHeader.split(' ')
+//     logger.info('End current month:', endCurrentMonth)
+//     logger.info('End current year:', endCurrentYear)
+//     // Convert MM/DD/YYYY to a format JavaScript can parse correctly
+//     const [endMonth, endDay, endYear] = internalEndDate.split('/')
+//     const endDate = new Date(`${endYear}-${endMonth}-${endDay}`)
+//     const endTargetYear = endDate.getFullYear()
+//     const endTargetMonth = endDate.toLocaleString('en-US', { month: 'long' })
+//     logger.info('End target month:', endTargetMonth)
+//     logger.info('End target year:', endTargetYear)
+//     logger.info('End Date:', endDate)
 
-    // Calculate months to navigate for end date
-    const endTotalMonthsToNavigate = calculateMonthsToNavigate(
-      endCurrentMonth,
-      endCurrentYear,
-      endTargetMonth,
-      endTargetYear,
-      {
-        January: 1,
-        February: 2,
-        March: 3,
-        April: 4,
-        May: 5,
-        June: 6,
-        July: 7,
-        August: 8,
-        September: 9,
-        October: 10,
-        November: 11,
-        December: 12,
-      }
-    )
+//     // Calculate months to navigate for end date
+//     const endTotalMonthsToNavigate = calculateMonthsToNavigate(
+//       endCurrentMonth,
+//       endCurrentYear,
+//       endTargetMonth,
+//       endTargetYear,
+//       {
+//         January: 1,
+//         February: 2,
+//         March: 3,
+//         April: 4,
+//         May: 5,
+//         June: 6,
+//         July: 7,
+//         August: 8,
+//         September: 9,
+//         October: 10,
+//         November: 11,
+//         December: 12,
+//       }
+//     )
 
-    logger.info('Total end months to navigate:', endTotalMonthsToNavigate)
+//     logger.info('Total end months to navigate:', endTotalMonthsToNavigate)
 
-    // Make sure navigation buttons are visible
-    await page.waitForSelector('.fds-datepicker-navigation button', {
-      visible: true,
-    })
-    const navigationButtonsEnd = await page.$$(
-      '.fds-datepicker-navigation button'
-    )
+//     // Make sure navigation buttons are visible
+//     await page.waitForSelector('.fds-datepicker-navigation button', {
+//       visible: true,
+//     })
+//     const navigationButtonsEnd = await page.$$(
+//       '.fds-datepicker-navigation button'
+//     )
 
-    // Navigate to end date month
-    const endNavigationButton =
-      endTotalMonthsToNavigate > 0
-        ? navigationButtonsEnd[0] // prev button for going back in time
-        : navigationButtonsEnd[1] // next button for going forward
+//     // Navigate to end date month
+//     const endNavigationButton =
+//       endTotalMonthsToNavigate > 0
+//         ? navigationButtonsEnd[0] // prev button for going back in time
+//         : navigationButtonsEnd[1] // next button for going forward
 
-    // Click navigation button with evaluation
-    for (let i = 0; i < Math.abs(endTotalMonthsToNavigate); i++) {
-      await page.evaluate((button) => button.click(), endNavigationButton)
-      await new Promise((r) => setTimeout(r, 200))
-    }
+//     // Click navigation button with evaluation
+//     for (let i = 0; i < Math.abs(endTotalMonthsToNavigate); i++) {
+//       await page.evaluate((button) => button.click(), endNavigationButton)
+//       await new Promise((r) => setTimeout(r, 200))
+//     }
 
-    // Select end day with evaluation
-    const endTargetDay = endDate.getDate()
-    await page.evaluate((day) => {
-      const dayButtons = document.querySelectorAll(
-        '.second-month .fds-datepicker-day'
-      )
-      const dayIndex = day - 1
-      if (dayButtons[dayIndex] && !dayButtons[dayIndex].disabled) {
-        dayButtons[dayIndex].click()
-      } else {
-        throw new Error('End date day button not found or disabled')
-      }
-    }, endTargetDay)
+//     // Select end day with evaluation
+//     const endTargetDay = endDate.getDate()
+//     await page.evaluate((day) => {
+//       const dayButtons = document.querySelectorAll(
+//         '.second-month .fds-datepicker-day'
+//       )
+//       const dayIndex = day - 1
+//       if (dayButtons[dayIndex] && !dayButtons[dayIndex].disabled) {
+//         dayButtons[dayIndex].click()
+//       } else {
+//         throw new Error('End date day button not found or disabled')
+//       }
+//     }, endTargetDay)
 
-    await new Promise((r) => setTimeout(r, 1000))
+//     await new Promise((r) => setTimeout(r, 1000))
 
-    // Click done button
-    await page.evaluate(() => {
-      const doneButton = document.querySelector('.fds-dropdown-footer button')
-      if (doneButton) {
-        doneButton.click()
-      } else {
-        throw new Error('Done button not found')
-      }
-    })
-    await new Promise((r) => setTimeout(r, 1000))
+//     // Click done button
+//     await page.evaluate(() => {
+//       const doneButton = document.querySelector('.fds-dropdown-footer button')
+//       if (doneButton) {
+//         doneButton.click()
+//       } else {
+//         throw new Error('Done button not found')
+//       }
+//     })
+//     await new Promise((r) => setTimeout(r, 1000))
 
-    // Verify dates were set
-    const fromValue = await page.$eval(
-      '.from-input-label input.fds-field-input',
-      (el) => el.value
-    )
-    const toValue = await page.$eval(
-      '.to-input-label input.fds-field-input',
-      (el) => el.value
-    )
+//     // Verify dates were set
+//     const fromValue = await page.$eval(
+//       '.from-input-label input.fds-field-input',
+//       (el) => el.value
+//     )
+//     const toValue = await page.$eval(
+//       '.to-input-label input.fds-field-input',
+//       (el) => el.value
+//     )
 
-    // Convert expected dates to DD/MM/YYYY format for comparison with Expedia's interface
-    const convertToExpediaFormat = (dateStr) => {
-      // Check if already in DD/MM/YYYY format
-      if (isExpediaFormat(dateStr)) return dateStr
+//     // Convert expected dates to DD/MM/YYYY format for comparison with Expedia's interface
+//     const convertToExpediaFormat = (dateStr) => {
+//       // Check if already in DD/MM/YYYY format
+//       if (isExpediaFormat(dateStr)) return dateStr
 
-      // Input is in MM/DD/YYYY format
-      const [month, day, year] = dateStr.split('/')
-      // Return in DD/MM/YYYY format as expected by Expedia's interface
-      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
-    }
+//       // Input is in MM/DD/YYYY format
+//       const [month, day, year] = dateStr.split('/')
+//       // Return in DD/MM/YYYY format as expected by Expedia's interface
+//       return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+//     }
 
-    const expectedFromDateExpediaFormat = convertToExpediaFormat(start_date)
-    const expectedToDateExpediaFormat = convertToExpediaFormat(end_date)
+//     const expectedFromDateExpediaFormat = convertToExpediaFormat(start_date)
+//     const expectedToDateExpediaFormat = convertToExpediaFormat(end_date)
 
-    logger.info(
-      'Expected from date (Expedia format):',
-      expectedFromDateExpediaFormat
-    )
-    logger.info('Actual from date:', fromValue)
-    logger.info(
-      'Expected to date (Expedia format):',
-      expectedToDateExpediaFormat
-    )
-    logger.info('Actual to date:', toValue)
+//     logger.info(
+//       'Expected from date (Expedia format):',
+//       expectedFromDateExpediaFormat
+//     )
+//     logger.info('Actual from date:', fromValue)
+//     logger.info(
+//       'Expected to date (Expedia format):',
+//       expectedToDateExpediaFormat
+//     )
+//     logger.info('Actual to date:', toValue)
 
-    // Compare with expected dates in Expedia format (DD/MM/YYYY)
-    const fromMatches = fromValue === expectedFromDateExpediaFormat
-    const toMatches = toValue === expectedToDateExpediaFormat
+//     // Compare with expected dates in Expedia format (DD/MM/YYYY)
+//     const fromMatches = fromValue === expectedFromDateExpediaFormat
+//     const toMatches = toValue === expectedToDateExpediaFormat
 
-    if (!fromMatches || !toMatches) {
-      logger.info('Date mismatch detected, attempting final correction...')
-      await page.evaluate(
-        (dates) => {
-          const [startDateStr, endDateStr] = dates
-          // Parse dates - handle both MM/DD/YYYY and DD/MM/YYYY formats
-          let startDay, startMonth, startYear, endDay, endMonth, endYear
+//     if (!fromMatches || !toMatches) {
+//       logger.info('Date mismatch detected, attempting final correction...')
+//       await page.evaluate(
+//         (dates) => {
+//           const [startDateStr, endDateStr] = dates
+//           // Parse dates - handle both MM/DD/YYYY and DD/MM/YYYY formats
+//           let startDay, startMonth, startYear, endDay, endMonth, endYear
 
-          // Check if dates are in DD/MM/YYYY format
-          const isExpediaFormat = (dateStr) => {
-            const parts = dateStr.split('/')
-            if (parts.length !== 3) return false
-            const firstPart = parseInt(parts[0])
-            return firstPart >= 1 && firstPart <= 31 && parts[0].length <= 2
-          }
+//           // Check if dates are in DD/MM/YYYY format
+//           const isExpediaFormat = (dateStr) => {
+//             const parts = dateStr.split('/')
+//             if (parts.length !== 3) return false
+//             const firstPart = parseInt(parts[0])
+//             return firstPart >= 1 && firstPart <= 31 && parts[0].length <= 2
+//           }
 
-          if (isExpediaFormat(startDateStr)) {
-            // DD/MM/YYYY format
-            ;[startDay, startMonth, startYear] = startDateStr.split('/')
-          } else {
-            // MM/DD/YYYY format
-            ;[startMonth, startDay, startYear] = startDateStr.split('/')
-          }
+//           if (isExpediaFormat(startDateStr)) {
+//             // DD/MM/YYYY format
+//             ;[startDay, startMonth, startYear] = startDateStr.split('/')
+//           } else {
+//             // MM/DD/YYYY format
+//             ;[startMonth, startDay, startYear] = startDateStr.split('/')
+//           }
 
-          if (isExpediaFormat(endDateStr)) {
-            // DD/MM/YYYY format
-            ;[endDay, endMonth, endYear] = endDateStr.split('/')
-          } else {
-            // MM/DD/YYYY format
-            ;[endMonth, endDay, endYear] = endDateStr.split('/')
-          }
+//           if (isExpediaFormat(endDateStr)) {
+//             // DD/MM/YYYY format
+//             ;[endDay, endMonth, endYear] = endDateStr.split('/')
+//           } else {
+//             // MM/DD/YYYY format
+//             ;[endMonth, endDay, endYear] = endDateStr.split('/')
+//           }
 
-          // Re-open the date picker
-          document
-            .querySelector('.from-input-label input.fds-field-input')
-            .click()
+//           // Re-open the date picker
+//           document
+//             .querySelector('.from-input-label input.fds-field-input')
+//             .click()
 
-          // Wait a bit and try to select dates again
-          setTimeout(() => {
-            // Get all days from both months
-            const allDays = document.querySelectorAll('.fds-datepicker-day')
+//           // Wait a bit and try to select dates again
+//           setTimeout(() => {
+//             // Get all days from both months
+//             const allDays = document.querySelectorAll('.fds-datepicker-day')
 
-            // Convert to array for easier manipulation
-            const daysArray = Array.from(allDays)
+//             // Convert to array for easier manipulation
+//             const daysArray = Array.from(allDays)
 
-            // Find start and end dates considering both months
-            const startDateElement = daysArray.find(
-              (el) =>
-                el.textContent.trim() === startDay &&
-                !el.classList.contains('disabled')
-            )
+//             // Find start and end dates considering both months
+//             const startDateElement = daysArray.find(
+//               (el) =>
+//                 el.textContent.trim() === startDay &&
+//                 !el.classList.contains('disabled')
+//             )
 
-            const endDateElement = daysArray.find(
-              (el) =>
-                el.textContent.trim() === endDay &&
-                !el.classList.contains('disabled') &&
-                (!startDateElement ||
-                  el.compareDocumentPosition(startDateElement) === 4)
-            )
+//             const endDateElement = daysArray.find(
+//               (el) =>
+//                 el.textContent.trim() === endDay &&
+//                 !el.classList.contains('disabled') &&
+//                 (!startDateElement ||
+//                   el.compareDocumentPosition(startDateElement) === 4)
+//             )
 
-            if (startDateElement && endDateElement) {
-              startDateElement.click()
-              // Add delay between clicks to ensure proper state updates
-              setTimeout(() => {
-                endDateElement.click()
-                // Verify date selection before closing
-                setTimeout(() => {
-                  const selectedStart = document.querySelector(
-                    '.from-input-label input.fds-field-input'
-                  ).value
-                  const selectedEnd = document.querySelector(
-                    '.to-input-label input.fds-field-input'
-                  ).value
+//             if (startDateElement && endDateElement) {
+//               startDateElement.click()
+//               // Add delay between clicks to ensure proper state updates
+//               setTimeout(() => {
+//                 endDateElement.click()
+//                 // Verify date selection before closing
+//                 setTimeout(() => {
+//                   const selectedStart = document.querySelector(
+//                     '.from-input-label input.fds-field-input'
+//                   ).value
+//                   const selectedEnd = document.querySelector(
+//                     '.to-input-label input.fds-field-input'
+//                   ).value
 
-                  if (selectedStart && selectedEnd) {
-                    const doneButton = document.querySelector(
-                      '.fds-dropdown-footer button'
-                    )
-                    if (doneButton) doneButton.click()
-                  }
-                }, 1000)
-              }, 1000)
-            }
-          }, 1000)
-        },
-        [start_date, end_date]
-      )
+//                   if (selectedStart && selectedEnd) {
+//                     const doneButton = document.querySelector(
+//                       '.fds-dropdown-footer button'
+//                     )
+//                     if (doneButton) doneButton.click()
+//                   }
+//                 }, 1000)
+//               }, 1000)
+//             }
+//           }, 1000)
+//         },
+//         [start_date, end_date]
+//       )
 
-      // Wait for the final correction to complete
-      await new Promise((r) => setTimeout(r, 2000))
-    }
+//       // Wait for the final correction to complete
+//       await new Promise((r) => setTimeout(r, 2000))
+//     }
 
-    return { from: fromValue, to: toValue }
-  } catch (error) {
-    logger.error('Error setting date range:', error)
-    throw error
-  }
-}
+//     return { from: fromValue, to: toValue }
+//   } catch (error) {
+//     logger.error('Error setting date range:', error)
+//     throw error
+//   }
+// }
 
 // Utility function to split date range into 3-day chunks
-function splitDateRange(startDate, endDate) {
-  const chunks = []
-  // Convert MM/DD/YYYY to a format JavaScript can parse correctly
-  const [startMonth, startDay, startYear] = startDate.split('/')
-  const [endMonth, endDay, endYear] = endDate.split('/')
-  // Use YYYY-MM-DD format for reliable date parsing
-  const start = new Date(
-    `${startYear}-${startMonth.padStart(2, '0')}-${startDay.padStart(2, '0')}`
-  )
-  const end = new Date(
-    `${endYear}-${endMonth.padStart(2, '0')}-${endDay.padStart(2, '0')}`
-  )
+// function splitDateRange(startDate, endDate) {
+//   const chunks = []
+//   // Convert MM/DD/YYYY to a format JavaScript can parse correctly
+//   const [startMonth, startDay, startYear] = startDate.split('/')
+//   const [endMonth, endDay, endYear] = endDate.split('/')
+//   // Use YYYY-MM-DD format for reliable date parsing
+//   const start = new Date(
+//     `${startYear}-${startMonth.padStart(2, '0')}-${startDay.padStart(2, '0')}`
+//   )
+//   const end = new Date(
+//     `${endYear}-${endMonth.padStart(2, '0')}-${endDay.padStart(2, '0')}`
+//   )
 
-  let currentStart = new Date(start)
-  while (currentStart < end) {
-    let currentEnd = new Date(currentStart)
-    currentEnd.setDate(currentEnd.getDate() + 2) // Add 2 days to make it a 3-day chunk
+//   let currentStart = new Date(start)
+//   while (currentStart < end) {
+//     let currentEnd = new Date(currentStart)
+//     currentEnd.setDate(currentEnd.getDate() + 2) // Add 2 days to make it a 3-day chunk
 
-    if (currentEnd > end) {
-      currentEnd = new Date(end)
-    }
+//     if (currentEnd > end) {
+//       currentEnd = new Date(end)
+//     }
 
-    chunks.push({
-      start: currentStart.toLocaleDateString('en-US'),
-      end: currentEnd.toLocaleDateString('en-US'),
-    })
+//     chunks.push({
+//       start: currentStart.toLocaleDateString('en-US'),
+//       end: currentEnd.toLocaleDateString('en-US'),
+//     })
 
-    currentStart = new Date(currentEnd)
-    currentStart.setDate(currentStart.getDate() + 1) // Start next chunk from next day
-  }
+//     currentStart = new Date(currentEnd)
+//     currentStart.setDate(currentStart.getDate() + 1) // Start next chunk from next day
+//   }
 
-  return chunks
-}
+//   return chunks
+// }
 
-function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 1) {
-  // Parse dates correctly regardless of MM/DD/YYYY or DD/MM/YYYY format
-  const parseDate = (dateStr) => {
-    // Check if the date is in MM/DD/YYYY format (our internal format)
-    if (dateStr.includes('/')) {
-      const parts = dateStr.split('/')
-      // Validate that we have three parts (month, day, year)
-      if (
-        parts[0].length <= 2 &&
-        parts[1].length <= 2 &&
-        parts[2].length === 4
-      ) {
-        // We consistently use MM/DD/YYYY format internally
-        // The first part is month, second part is day
-        const month = parseInt(parts[0], 10)
-        const day = parseInt(parts[1], 10)
-        const year = parseInt(parts[2], 10)
+// function splitDateRangeIntoChunks(start_date, end_date, chunkSize = 1) {
+//   // Parse dates correctly regardless of MM/DD/YYYY or DD/MM/YYYY format
+//   const parseDate = (dateStr) => {
+//     // Check if the date is in MM/DD/YYYY format (our internal format)
+//     if (dateStr.includes('/')) {
+//       const parts = dateStr.split('/')
+//       // Validate that we have three parts (month, day, year)
+//       if (
+//         parts[0].length <= 2 &&
+//         parts[1].length <= 2 &&
+//         parts[2].length === 4
+//       ) {
+//         // We consistently use MM/DD/YYYY format internally
+//         // The first part is month, second part is day
+//         const month = parseInt(parts[0], 10)
+//         const day = parseInt(parts[1], 10)
+//         const year = parseInt(parts[2], 10)
 
-        // Create date using reliable YYYY-MM-DD format
-        return new Date(
-          `${year}-${month.toString().padStart(2, '0')}-${day
-            .toString()
-            .padStart(2, '0')}`
-        )
-      }
-    }
+//         // Create date using reliable YYYY-MM-DD format
+//         return new Date(
+//           `${year}-${month.toString().padStart(2, '0')}-${day
+//             .toString()
+//             .padStart(2, '0')}`
+//         )
+//       }
+//     }
 
-    // Fallback to default parsing
-    return new Date(dateStr)
-  }
+//     // Fallback to default parsing
+//     return new Date(dateStr)
+//   }
 
-  // Parse the start and end dates
-  const startDate = parseDate(start_date)
-  const endDate = parseDate(end_date)
+//   // Parse the start and end dates
+//   const startDate = parseDate(start_date)
+//   const endDate = parseDate(end_date)
 
-  // Log the parsed dates for debugging
-  console.log(`Parsed start date: ${startDate.toISOString()}`)
-  console.log(`Parsed end date: ${endDate.toISOString()}`)
+//   // Log the parsed dates for debugging
+//   console.log(`Parsed start date: ${startDate.toISOString()}`)
+//   console.log(`Parsed end date: ${endDate.toISOString()}`)
 
-  // If start and end dates are the same, return a single chunk with same dates
-  if (startDate.getTime() === endDate.getTime()) {
-    return [
-      {
-        start: start_date,
-        end: end_date,
-      },
-    ]
-  }
+//   // If start and end dates are the same, return a single chunk with same dates
+//   if (startDate.getTime() === endDate.getTime()) {
+//     return [
+//       {
+//         start: start_date,
+//         end: end_date,
+//       },
+//     ]
+//   }
 
-  const dateChunks = []
-  let currentDate = new Date(startDate)
+//   const dateChunks = []
+//   let currentDate = new Date(startDate)
 
-  // Only create chunks for the specific date range requested
-  while (currentDate <= endDate) {
-    const nextDate = new Date(currentDate)
-    nextDate.setDate(currentDate.getDate() + chunkSize - 1)
-    if (nextDate > endDate) {
-      nextDate.setTime(endDate.getTime()) // Use exact end date time
-    }
+//   // Only create chunks for the specific date range requested
+//   while (currentDate <= endDate) {
+//     const nextDate = new Date(currentDate)
+//     nextDate.setDate(currentDate.getDate() + chunkSize - 1)
+//     if (nextDate > endDate) {
+//       nextDate.setTime(endDate.getTime()) // Use exact end date time
+//     }
 
-    // Format dates as MM/DD/YYYY for internal consistency
-    const formatDate = (date) => {
-      const month = date.getMonth() + 1
-      const day = date.getDate()
-      const year = date.getFullYear()
-      return `${month}/${day}/${year}`
-    }
+//     // Format dates as MM/DD/YYYY for internal consistency
+//     const formatDate = (date) => {
+//       const month = date.getMonth() + 1
+//       const day = date.getDate()
+//       const year = date.getFullYear()
+//       return `${month}/${day}/${year}`
+//     }
 
-    dateChunks.push({
-      start: formatDate(currentDate),
-      end: formatDate(nextDate),
-    })
+//     dateChunks.push({
+//       start: formatDate(currentDate),
+//       end: formatDate(nextDate),
+//     })
 
-    // Move to next chunk
-    currentDate = new Date(nextDate)
-    currentDate.setDate(currentDate.getDate() + 1)
-  }
+//     // Move to next chunk
+//     currentDate = new Date(nextDate)
+//     currentDate.setDate(currentDate.getDate() + 1)
+//   }
 
-  return dateChunks
-}
+//   return dateChunks
+// }
 
 // Puppeteer Login Function
 async function loginToExpediaPartner(
@@ -927,297 +956,594 @@ async function loginToExpediaPartner(
 
     logger.info('Login successful!')
 
-    //in here we will check is property name is ser or not
-    if (propertyName) {
-      // Wait for property table to load
-      await page.waitForSelector('.fds-data-table-wrapper', {
-        visible: true,
-        timeout: 30000,
-      })
+    const sheetData = getDataFromSheet();
 
-      // Wait for property search input
-      await page.waitForSelector(
-        '.all-properties__search input.fds-field-input'
-      )
+    for (const item of sheetData) {
+      const propertyName = item.name;
 
-      // Get property name from query params
-      logger.info(`Searching for property: ${propertyName}`)
-
-      // Type property name in search
-      await page.type(
-        '.all-properties__search input.fds-field-input',
-        propertyName,
-        { delay: 100 }
-      )
-
-      // Wait for search results
-      await delay(2000)
-
-      // Find and click the property link with more specific selector
-      try {
-        // Wait for search results to update
-        await page.waitForSelector('tbody tr', {
+      if (propertyName) {
+        // Wait for property table to load
+        await page.waitForSelector('.fds-data-table-wrapper', {
           visible: true,
-          timeout: 10000,
+          timeout: 30000,
         })
-
-        // More specific selector for the property link
-        const propertySelector = `.property-cell__property-name a[href*="/lodging/home/home"]`
-
-        const propertyLink = await page.waitForSelector(propertySelector, {
-          visible: true,
-          timeout: 10000,
-        })
-
-        if (propertyLink) {
-          // Get the text to verify it's the right property
-          const linkText = await page.evaluate(
-            (el) => el.textContent,
-            propertyLink
-          )
-          logger.info(`Found property: ${linkText}, clicking...`)
-
-          try {
-            // Click the link and wait for navigation
-            await Promise.all([
-              page.waitForNavigation({
-                waitUntil: 'networkidle0',
-                timeout: 30000,
-              }),
-              propertyLink.click(),
-            ])
-
-            // Wait for the new page to load
-            await delay(8000)
-          } catch (error) {
-            console.error(error.message)
+  
+        // Wait for property search input
+        await page.waitForSelector(
+          '.all-properties__search input.fds-field-input'
+        )
+  
+        // Get property name from query params
+        logger.info(`Searching for property: ${propertyName}`)
+  
+        // Type property name in search
+        await page.type(
+          '.all-properties__search input.fds-field-input',
+          propertyName,
+          { delay: 100 }
+        )
+  
+        // Wait for search results
+        await delay(2000)
+  
+        // Find and click the property link with more specific selector
+        try {
+          // Wait for search results to update
+          await page.waitForSelector('tbody tr', {
+            visible: true,
+            timeout: 10000,
+          })
+  
+          // More specific selector for the property link
+          const propertySelector = `.property-cell__property-name`
+  
+          const propertyLink = await page.waitForSelector(propertySelector, {
+            visible: true,
+            timeout: 10000,
+          })
+  
+          if (propertyLink) {
+            // Get the text to verify it's the right property
+            const linkText = await page.evaluate(
+              (el) => el.textContent,
+              propertyLink
+            )
+            logger.info(`Found property: ${linkText}, clicking...`)
+  
+            try {
+              // Click the link and wait for navigation
+              await Promise.all([
+                page.waitForNavigation({
+                  waitUntil: 'networkidle0',
+                  timeout: 30000,
+                }),
+                propertyLink.click(),
+              ])
+  
+              // Wait for the new page to load
+              await delay(8000)
+            } catch (error) {
+              console.error(error.message)
+            }
           }
+        } catch (error) {
+          logger.error(`Error finding/clicking property: ${error.message}`)
+          throw error
         }
+      }
+      
+      logger.info('Looking for Reservations link...')
+
+      try {
+        // Wait for the drawer content to load
+        await page.waitForSelector('.uitk-drawer-content', {
+          visible: true,
+          timeout: 30000,
+        })
+
+        // Click using JavaScript with the exact structure
+        const clicked = await page.evaluate(() => {
+          const reservationsItem = Array.from(
+            document.querySelectorAll('.uitk-action-list-item-content')
+          ).find((item) => {
+            const textDiv = item.querySelector('.uitk-text.overflow-wrap')
+            return textDiv && textDiv.textContent.trim() === 'Reservations'
+          })
+
+          if (reservationsItem) {
+            const link = reservationsItem.querySelector(
+              'a.uitk-action-list-item-link'
+            )
+            if (link) {
+              link.click()
+              return true
+            }
+          }
+          return false
+        })
+
+        if (!clicked) {
+          throw new Error('Could not find or click Reservations link')
+        }
+
+        // Wait for navigation to complete
+        await Promise.all([
+          page.waitForNavigation({
+            waitUntil: 'networkidle0',
+            timeout: 80000,
+          }),
+          delay(8000),
+        ])
+
+        logger.info('Successfully navigated to Reservations page')
+
+        // Wait for date filters to be visible
+        logger.info('Waiting for date filters...')
+        await page.waitForSelector('input[type="radio"][name="dateTypeFilter"]', {
+          visible: true,
+          timeout: 80000,
+        })
+        ///////////////////////////////////
+        //new tab opening
+        ///////////////////////////////////
+        // Get the current URL
+        const currentUrl = page.url()
+        console.log(`Current tab URL: ${currentUrl}`)
+
+        // Generate date chunks
+        // const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 1)
+        // console.log('Date Chunks:', dateChunks)
+
+        // Process each date chunk sequentially in the same tab
+        const allReservations = []
+
+        // Helper function to format dates for Expedia's interface
+        // const formatDateForProcessing = (dateStr) => {
+        //   // Input is in MM/DD/YYYY format (our internal format)
+        //   // const [month, day, year] = dateStr.split('/')
+        //   // Parse date using reliable YYYY-MM-DD format
+        //   const date = new Date(
+        //     `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+        //   )
+        //   const formattedDay = date.getDate().toString().padStart(2, '0')
+        //   const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
+        //   const formattedYear = date.getFullYear()
+        //   // Return in DD/MM/YYYY format as expected by Expedia's interface
+        //   return `${formattedDay}/${formattedMonth}/${formattedYear}`
+        // }
+
+        for (const chunk of item.idList) {
+          logger.info(`Processing id: ${chunk}`)
+
+          // Format dates for URL parameters (YYYY-MM-DD format for Expedia's API)
+          // const formatDateForUrl = (dateStr) => {
+          //   // Convert MM/DD/YYYY to a format JavaScript can parse correctly
+          //   const [month, day, year] = dateStr.split('/')
+          //   const date = new Date(`${year}-${month}-${day}`)
+          //   const formattedYear = date.getFullYear()
+          //   const formattedMonth = (date.getMonth() + 1)
+          //     .toString()
+          //     .padStart(2, '0')
+          //   const formattedDay = date.getDate().toString().padStart(2, '0')
+          //   return `${formattedYear}-${formattedMonth}-${formattedDay}`
+          // }
+
+          // const startParam = formatDateForUrl(chunk.start)
+          // const endParam = formatDateForUrl(chunk.end)
+
+          // Construct URL for the current chunk
+          // let chunkUrl
+          // if (currentUrl.includes('#')) {
+          //   try {
+          //     const baseUrl = currentUrl.split('#')[0]
+          //     const hash = currentUrl.split('#')[1]
+          //     const params = new URLSearchParams(hash)
+          //     params.set('startDate', startParam)
+          //     params.set('endDate', endParam)
+          //     chunkUrl = `${baseUrl}#${params.toString()}`
+          //   } catch (error) {
+          //     logger.warn(`Error parsing URL hash fragment: ${error.message}`)
+          //     chunkUrl = currentUrl
+          //   }
+          // } else {
+          //   const separator = currentUrl.includes('?') ? '&' : '?'
+          //   chunkUrl = `${currentUrl}${separator}startDate=${startParam}&endDate=${endParam}`
+          // }
+
+          // // Navigate to the URL for current chunk
+          // logger.info(`Navigating to: ${chunkUrl}`)
+          // await page.goto(chunkUrl, { waitUntil: 'networkidle2' })
+          // await delay(3000) // Wait for page to stabilize
+
+          // Process the current chunk
+          // const formattedStart = formatDateForProcessing(chunk.start)
+          // const formattedEnd = formatDateForProcessing(chunk.end)
+
+          // logger.info(
+          //   `Processing date range: ${formattedStart} to ${formattedEnd}`
+          // )
+          const chunkReservations = await processReservationsPage(
+            page,
+            chunk
+          )
+          allReservations.push(...chunkReservations)
+        }
+
+        logger.info(
+          `Found total ${allReservations.length} reservations across all chunks`
+        )
+
+        // Get current date and time for filename
+        const now = new Date()
+        const timestamp = now.toISOString().replace(/[:.]/g, '-')
+
+        // Save all reservations to Excel with timestamp
+        const workbook = xlsx.utils.book_new()
+        const wsData = [
+          [
+            'Guest Name',
+            'Reservation ID',
+            'Confirmation Code',
+            'Check-in Date',
+            'Check-out Date',
+            'Room Type',
+            'Booking Amount',
+            'Booked Date',
+            'Card Number',
+            'Expiry Date',
+            'CVV',
+            'Has Card Info',
+            'Has Payment Info',
+            'Total Guest Payment',
+            'Cancellation Fee',
+            'Expedia Compensation',
+            'Total Payout',
+            'Amount to charge/refund',
+            'Reason of charge',
+            'Status',
+          ],
+          ...allReservations.map((res) => [
+            res.guestName,
+            res.reservationId,
+            res.confirmationCode,
+            res.checkInDate,
+            res.checkOutDate,
+            res.roomType,
+            res.bookingAmount,
+            res.bookedDate,
+            res.cardNumber || 'N/A',
+            res.expiryDate || 'N/A',
+            res.cvv || 'N/A',
+            res.hasCardInfo ? 'Yes' : 'No',
+            res.hasPaymentInfo ? 'Yes' : 'No',
+            res.totalGuestPayment || 'N/A',
+            res.cancellationFee || 'N/A',
+            res.expediaCompensation || 'N/A',
+            res.totalPayout || 'N/A',
+            res.amountToChargeOrRefund || 'N/A',
+            res.reasonOfCharge || 'N/A',
+            res.status || 'Active',
+          ]),
+        ]
+
+        const ws = xlsx.utils.aoa_to_sheet(wsData)
+        xlsx.utils.book_append_sheet(workbook, ws, 'Reservations')
+        xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`)
+        logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`)
+
+        // Log summary of processed reservations
+        logger.info(`Total reservations exported: ${allReservations.length}`)
+        const processedDates = new Set(allReservations.map((r) => r.checkInDate))
+        // logger.info(
+        //   `Successfully processed dates: ${Array.from(processedDates).join(', ')}`
+        // )
+        if (processedDates.size === 0) {
+          logger.warn(
+            'Warning: No dates were successfully processed in this export'
+          )
+        }
+
+        // Close the browser
+        // await browser.close()
+        return allReservations
       } catch (error) {
-        logger.error(`Error finding/clicking property: ${error.message}`)
+        logger.error('Error finding/clicking Reservations:', error.message)
         throw error
       }
+
     }
+
+    //in here we will check is property name is ser or not
+    // if (propertyName) {
+    //   // Wait for property table to load
+    //   await page.waitForSelector('.fds-data-table-wrapper', {
+    //     visible: true,
+    //     timeout: 30000,
+    //   })
+
+    //   // Wait for property search input
+    //   await page.waitForSelector(
+    //     '.all-properties__search input.fds-field-input'
+    //   )
+
+    //   // Get property name from query params
+    //   logger.info(`Searching for property: ${propertyName}`)
+
+    //   // Type property name in search
+    //   await page.type(
+    //     '.all-properties__search input.fds-field-input',
+    //     propertyName,
+    //     { delay: 100 }
+    //   )
+
+    //   // Wait for search results
+    //   await delay(2000)
+
+    //   // Find and click the property link with more specific selector
+    //   try {
+    //     // Wait for search results to update
+    //     await page.waitForSelector('tbody tr', {
+    //       visible: true,
+    //       timeout: 10000,
+    //     })
+
+    //     // More specific selector for the property link
+    //     const propertySelector = `.property-cell__property-name`
+
+    //     const propertyLink = await page.waitForSelector(propertySelector, {
+    //       visible: true,
+    //       timeout: 10000,
+    //     })
+
+    //     if (propertyLink) {
+    //       // Get the text to verify it's the right property
+    //       const linkText = await page.evaluate(
+    //         (el) => el.textContent,
+    //         propertyLink
+    //       )
+    //       logger.info(`Found property: ${linkText}, clicking...`)
+
+    //       try {
+    //         // Click the link and wait for navigation
+    //         await Promise.all([
+    //           page.waitForNavigation({
+    //             waitUntil: 'networkidle0',
+    //             timeout: 30000,
+    //           }),
+    //           propertyLink.click(),
+    //         ])
+
+    //         // Wait for the new page to load
+    //         await delay(8000)
+    //       } catch (error) {
+    //         console.error(error.message)
+    //       }
+    //     }
+    //   } catch (error) {
+    //     logger.error(`Error finding/clicking property: ${error.message}`)
+    //     throw error
+    //   }
+    // }
     // Find and click the Reservations link
     logger.info('Looking for Reservations link...')
 
-    try {
-      // Wait for the drawer content to load
-      await page.waitForSelector('.uitk-drawer-content', {
-        visible: true,
-        timeout: 30000,
-      })
+    // try {
+    //   // Wait for the drawer content to load
+    //   await page.waitForSelector('.uitk-drawer-content', {
+    //     visible: true,
+    //     timeout: 30000,
+    //   })
 
-      // Click using JavaScript with the exact structure
-      const clicked = await page.evaluate(() => {
-        const reservationsItem = Array.from(
-          document.querySelectorAll('.uitk-action-list-item-content')
-        ).find((item) => {
-          const textDiv = item.querySelector('.uitk-text.overflow-wrap')
-          return textDiv && textDiv.textContent.trim() === 'Reservations'
-        })
+    //   // Click using JavaScript with the exact structure
+    //   const clicked = await page.evaluate(() => {
+    //     const reservationsItem = Array.from(
+    //       document.querySelectorAll('.uitk-action-list-item-content')
+    //     ).find((item) => {
+    //       const textDiv = item.querySelector('.uitk-text.overflow-wrap')
+    //       return textDiv && textDiv.textContent.trim() === 'Reservations'
+    //     })
 
-        if (reservationsItem) {
-          const link = reservationsItem.querySelector(
-            'a.uitk-action-list-item-link'
-          )
-          if (link) {
-            link.click()
-            return true
-          }
-        }
-        return false
-      })
+    //     if (reservationsItem) {
+    //       const link = reservationsItem.querySelector(
+    //         'a.uitk-action-list-item-link'
+    //       )
+    //       if (link) {
+    //         link.click()
+    //         return true
+    //       }
+    //     }
+    //     return false
+    //   })
 
-      if (!clicked) {
-        throw new Error('Could not find or click Reservations link')
-      }
+    //   if (!clicked) {
+    //     throw new Error('Could not find or click Reservations link')
+    //   }
 
-      // Wait for navigation to complete
-      await Promise.all([
-        page.waitForNavigation({
-          waitUntil: 'networkidle0',
-          timeout: 80000,
-        }),
-        delay(8000),
-      ])
+    //   // Wait for navigation to complete
+    //   await Promise.all([
+    //     page.waitForNavigation({
+    //       waitUntil: 'networkidle0',
+    //       timeout: 80000,
+    //     }),
+    //     delay(8000),
+    //   ])
 
-      logger.info('Successfully navigated to Reservations page')
+    //   logger.info('Successfully navigated to Reservations page')
 
-      // Wait for date filters to be visible
-      logger.info('Waiting for date filters...')
-      await page.waitForSelector('input[type="radio"][name="dateTypeFilter"]', {
-        visible: true,
-        timeout: 80000,
-      })
-      ///////////////////////////////////
-      //new tab opening
-      ///////////////////////////////////
-      // Get the current URL
-      const currentUrl = page.url()
-      console.log(`Current tab URL: ${currentUrl}`)
+    //   // Wait for date filters to be visible
+    //   logger.info('Waiting for date filters...')
+    //   await page.waitForSelector('input[type="radio"][name="dateTypeFilter"]', {
+    //     visible: true,
+    //     timeout: 80000,
+    //   })
+    //   ///////////////////////////////////
+    //   //new tab opening
+    //   ///////////////////////////////////
+    //   // Get the current URL
+    //   const currentUrl = page.url()
+    //   console.log(`Current tab URL: ${currentUrl}`)
 
-      // Generate date chunks
-      const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 1)
-      console.log('Date Chunks:', dateChunks)
+    //   // Generate date chunks
+    //   const dateChunks = splitDateRangeIntoChunks(start_date, end_date, 1)
+    //   console.log('Date Chunks:', dateChunks)
 
-      // Process each date chunk sequentially in the same tab
-      const allReservations = []
+    //   // Process each date chunk sequentially in the same tab
+    //   const allReservations = []
 
-      // Helper function to format dates for Expedia's interface
-      const formatDateForProcessing = (dateStr) => {
-        // Input is in MM/DD/YYYY format (our internal format)
-        const [month, day, year] = dateStr.split('/')
-        // Parse date using reliable YYYY-MM-DD format
-        const date = new Date(
-          `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-        )
-        const formattedDay = date.getDate().toString().padStart(2, '0')
-        const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
-        const formattedYear = date.getFullYear()
-        // Return in DD/MM/YYYY format as expected by Expedia's interface
-        return `${formattedDay}/${formattedMonth}/${formattedYear}`
-      }
+    //   // Helper function to format dates for Expedia's interface
+    //   const formatDateForProcessing = (dateStr) => {
+    //     // Input is in MM/DD/YYYY format (our internal format)
+    //     const [month, day, year] = dateStr.split('/')
+    //     // Parse date using reliable YYYY-MM-DD format
+    //     const date = new Date(
+    //       `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    //     )
+    //     const formattedDay = date.getDate().toString().padStart(2, '0')
+    //     const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0')
+    //     const formattedYear = date.getFullYear()
+    //     // Return in DD/MM/YYYY format as expected by Expedia's interface
+    //     return `${formattedDay}/${formattedMonth}/${formattedYear}`
+    //   }
 
-      for (const chunk of dateChunks) {
-        logger.info(`Processing chunk: ${chunk.start} to ${chunk.end}`)
+    //   for (const chunk of dateChunks) {
+    //     logger.info(`Processing chunk: ${chunk.start} to ${chunk.end}`)
 
-        // Format dates for URL parameters (YYYY-MM-DD format for Expedia's API)
-        const formatDateForUrl = (dateStr) => {
-          // Convert MM/DD/YYYY to a format JavaScript can parse correctly
-          const [month, day, year] = dateStr.split('/')
-          const date = new Date(`${year}-${month}-${day}`)
-          const formattedYear = date.getFullYear()
-          const formattedMonth = (date.getMonth() + 1)
-            .toString()
-            .padStart(2, '0')
-          const formattedDay = date.getDate().toString().padStart(2, '0')
-          return `${formattedYear}-${formattedMonth}-${formattedDay}`
-        }
+    //     // Format dates for URL parameters (YYYY-MM-DD format for Expedia's API)
+    //     const formatDateForUrl = (dateStr) => {
+    //       // Convert MM/DD/YYYY to a format JavaScript can parse correctly
+    //       const [month, day, year] = dateStr.split('/')
+    //       const date = new Date(`${year}-${month}-${day}`)
+    //       const formattedYear = date.getFullYear()
+    //       const formattedMonth = (date.getMonth() + 1)
+    //         .toString()
+    //         .padStart(2, '0')
+    //       const formattedDay = date.getDate().toString().padStart(2, '0')
+    //       return `${formattedYear}-${formattedMonth}-${formattedDay}`
+    //     }
 
-        const startParam = formatDateForUrl(chunk.start)
-        const endParam = formatDateForUrl(chunk.end)
+    //     const startParam = formatDateForUrl(chunk.start)
+    //     const endParam = formatDateForUrl(chunk.end)
 
-        // Construct URL for the current chunk
-        let chunkUrl
-        if (currentUrl.includes('#')) {
-          try {
-            const baseUrl = currentUrl.split('#')[0]
-            const hash = currentUrl.split('#')[1]
-            const params = new URLSearchParams(hash)
-            params.set('startDate', startParam)
-            params.set('endDate', endParam)
-            chunkUrl = `${baseUrl}#${params.toString()}`
-          } catch (error) {
-            logger.warn(`Error parsing URL hash fragment: ${error.message}`)
-            chunkUrl = currentUrl
-          }
-        } else {
-          const separator = currentUrl.includes('?') ? '&' : '?'
-          chunkUrl = `${currentUrl}${separator}startDate=${startParam}&endDate=${endParam}`
-        }
+    //     // Construct URL for the current chunk
+    //     let chunkUrl
+    //     if (currentUrl.includes('#')) {
+    //       try {
+    //         const baseUrl = currentUrl.split('#')[0]
+    //         const hash = currentUrl.split('#')[1]
+    //         const params = new URLSearchParams(hash)
+    //         params.set('startDate', startParam)
+    //         params.set('endDate', endParam)
+    //         chunkUrl = `${baseUrl}#${params.toString()}`
+    //       } catch (error) {
+    //         logger.warn(`Error parsing URL hash fragment: ${error.message}`)
+    //         chunkUrl = currentUrl
+    //       }
+    //     } else {
+    //       const separator = currentUrl.includes('?') ? '&' : '?'
+    //       chunkUrl = `${currentUrl}${separator}startDate=${startParam}&endDate=${endParam}`
+    //     }
 
-        // Navigate to the URL for current chunk
-        logger.info(`Navigating to: ${chunkUrl}`)
-        await page.goto(chunkUrl, { waitUntil: 'networkidle2' })
-        await delay(3000) // Wait for page to stabilize
+    //     // Navigate to the URL for current chunk
+    //     logger.info(`Navigating to: ${chunkUrl}`)
+    //     await page.goto(chunkUrl, { waitUntil: 'networkidle2' })
+    //     await delay(3000) // Wait for page to stabilize
 
-        // Process the current chunk
-        const formattedStart = formatDateForProcessing(chunk.start)
-        const formattedEnd = formatDateForProcessing(chunk.end)
+    //     // Process the current chunk
+    //     const formattedStart = formatDateForProcessing(chunk.start)
+    //     const formattedEnd = formatDateForProcessing(chunk.end)
 
-        logger.info(
-          `Processing date range: ${formattedStart} to ${formattedEnd}`
-        )
-        const chunkReservations = await processReservationsPage(
-          page,
-          formattedStart,
-          formattedEnd
-        )
-        allReservations.push(...chunkReservations)
-      }
+    //     logger.info(
+    //       `Processing date range: ${formattedStart} to ${formattedEnd}`
+    //     )
+    //     const chunkReservations = await processReservationsPage(
+    //       page,
+    //       formattedStart,
+    //       formattedEnd
+    //     )
+    //     allReservations.push(...chunkReservations)
+    //   }
 
-      logger.info(
-        `Found total ${allReservations.length} reservations across all chunks`
-      )
+    //   logger.info(
+    //     `Found total ${allReservations.length} reservations across all chunks`
+    //   )
 
-      // Get current date and time for filename
-      const now = new Date()
-      const timestamp = now.toISOString().replace(/[:.]/g, '-')
+    //   // Get current date and time for filename
+    //   const now = new Date()
+    //   const timestamp = now.toISOString().replace(/[:.]/g, '-')
 
-      // Save all reservations to Excel with timestamp
-      const workbook = xlsx.utils.book_new()
-      const wsData = [
-        [
-          'Guest Name',
-          'Reservation ID',
-          'Confirmation Code',
-          'Check-in Date',
-          'Check-out Date',
-          'Room Type',
-          'Booking Amount',
-          'Booked Date',
-          'Card Number',
-          'Expiry Date',
-          'CVV',
-          'Has Card Info',
-          'Has Payment Info',
-          'Total Guest Payment',
-          'Cancellation Fee',
-          'Expedia Compensation',
-          'Total Payout',
-          'Amount to charge/refund',
-          'Reason of charge',
-          'Status',
-        ],
-        ...allReservations.map((res) => [
-          res.guestName,
-          res.reservationId,
-          res.confirmationCode,
-          res.checkInDate,
-          res.checkOutDate,
-          res.roomType,
-          res.bookingAmount,
-          res.bookedDate,
-          res.cardNumber || 'N/A',
-          res.expiryDate || 'N/A',
-          res.cvv || 'N/A',
-          res.hasCardInfo ? 'Yes' : 'No',
-          res.hasPaymentInfo ? 'Yes' : 'No',
-          res.totalGuestPayment || 'N/A',
-          res.cancellationFee || 'N/A',
-          res.expediaCompensation || 'N/A',
-          res.totalPayout || 'N/A',
-          res.amountToChargeOrRefund || 'N/A',
-          res.reasonOfCharge || 'N/A',
-          res.status || 'Active',
-        ]),
-      ]
+    //   // Save all reservations to Excel with timestamp
+    //   const workbook = xlsx.utils.book_new()
+    //   const wsData = [
+    //     [
+    //       'Guest Name',
+    //       'Reservation ID',
+    //       'Confirmation Code',
+    //       'Check-in Date',
+    //       'Check-out Date',
+    //       'Room Type',
+    //       'Booking Amount',
+    //       'Booked Date',
+    //       'Card Number',
+    //       'Expiry Date',
+    //       'CVV',
+    //       'Has Card Info',
+    //       'Has Payment Info',
+    //       'Total Guest Payment',
+    //       'Cancellation Fee',
+    //       'Expedia Compensation',
+    //       'Total Payout',
+    //       'Amount to charge/refund',
+    //       'Reason of charge',
+    //       'Status',
+    //     ],
+    //     ...allReservations.map((res) => [
+    //       res.guestName,
+    //       res.reservationId,
+    //       res.confirmationCode,
+    //       res.checkInDate,
+    //       res.checkOutDate,
+    //       res.roomType,
+    //       res.bookingAmount,
+    //       res.bookedDate,
+    //       res.cardNumber || 'N/A',
+    //       res.expiryDate || 'N/A',
+    //       res.cvv || 'N/A',
+    //       res.hasCardInfo ? 'Yes' : 'No',
+    //       res.hasPaymentInfo ? 'Yes' : 'No',
+    //       res.totalGuestPayment || 'N/A',
+    //       res.cancellationFee || 'N/A',
+    //       res.expediaCompensation || 'N/A',
+    //       res.totalPayout || 'N/A',
+    //       res.amountToChargeOrRefund || 'N/A',
+    //       res.reasonOfCharge || 'N/A',
+    //       res.status || 'Active',
+    //     ]),
+    //   ]
 
-      const ws = xlsx.utils.aoa_to_sheet(wsData)
-      xlsx.utils.book_append_sheet(workbook, ws, 'Reservations')
-      xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`)
-      logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`)
+    //   const ws = xlsx.utils.aoa_to_sheet(wsData)
+    //   xlsx.utils.book_append_sheet(workbook, ws, 'Reservations')
+    //   xlsx.writeFile(workbook, `reservations_${timestamp}.xlsx`)
+    //   logger.info(`Saved reservation data to reservations_${timestamp}.xlsx`)
 
-      // Log summary of processed reservations
-      logger.info(`Total reservations exported: ${allReservations.length}`)
-      const processedDates = new Set(allReservations.map((r) => r.checkInDate))
-      // logger.info(
-      //   `Successfully processed dates: ${Array.from(processedDates).join(', ')}`
-      // )
-      if (processedDates.size === 0) {
-        logger.warn(
-          'Warning: No dates were successfully processed in this export'
-        )
-      }
+    //   // Log summary of processed reservations
+    //   logger.info(`Total reservations exported: ${allReservations.length}`)
+    //   const processedDates = new Set(allReservations.map((r) => r.checkInDate))
+    //   // logger.info(
+    //   //   `Successfully processed dates: ${Array.from(processedDates).join(', ')}`
+    //   // )
+    //   if (processedDates.size === 0) {
+    //     logger.warn(
+    //       'Warning: No dates were successfully processed in this export'
+    //     )
+    //   }
 
-      // Close the browser
-      // await browser.close()
-      return allReservations
-    } catch (error) {
-      logger.error('Error finding/clicking Reservations:', error.message)
-      throw error
-    }
+    //   // Close the browser
+    //   // await browser.close()
+    //   return allReservations
+    // } catch (error) {
+    //   logger.error('Error finding/clicking Reservations:', error.message)
+    //   throw error
+    // }
   } catch (error) {
     logger.error(`Error finding/clicking property: ${error.message}`)
     if (browser) await browser.close()
@@ -1226,194 +1552,211 @@ async function loginToExpediaPartner(
 }
 
 // New function to process reservations on a single page
-async function processReservationsPage(page, start_date, end_date) {
+async function processReservationsPage(page, id) {
   try {
+    {
     // Click the "Checking out" radio button
-    logger.info('Selecting "Checking out" filter...')
-    await page.evaluate(() => {
-      const radioButtons = Array.from(
-        document.querySelectorAll('input[type="radio"][name="dateTypeFilter"]')
-      )
-      const checkingOutButton = radioButtons.find(
-        (radio) =>
-          radio.parentElement
-            .querySelector('.fds-switch-label')
-            .textContent.trim() === 'Checking out'
-      )
-      if (checkingOutButton) {
-        checkingOutButton.click()
-      }
-    })
+    // logger.info('Selecting "Checking out" filter...')
+    // await page.evaluate(() => {
+    //   const radioButtons = Array.from(
+    //     document.querySelectorAll('input[type="radio"][name="dateTypeFilter"]')
+    //   )
+    //   const checkingOutButton = radioButtons.find(
+    //     (radio) =>
+    //       radio.parentElement
+    //         .querySelector('.fds-switch-label')
+    //         .textContent.trim() === 'Checking out'
+    //   )
+    //   if (checkingOutButton) {
+    //     checkingOutButton.click()
+    //   }
+    // })
 
-    // Wait for radio button click to take effect
-    await delay(2000)
+    // // Wait for radio button click to take effect
+    // await delay(2000)
 
-    // Set the date range
-    logger.info(`Processing date range: ${start_date} to ${end_date}`)
-    const dateValues = await setDateRange(page, start_date, end_date)
-    logger.info('Set dates:', dateValues)
+    // // Set the date range
+    // logger.info(`Processing date range: ${start_date} to ${end_date}`)
+    // const dateValues = await setDateRange(page, start_date, end_date)
+    // logger.info('Set dates:', dateValues)
 
-    //////////////////////////////////////////////////////////////
-    //more filter button
-    //////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////
+    // // more filter button
+    // ////////////////////////////////////////////////////////////
 
-    //wait for the more filter button
-    logger.info('Waiting for the More filters button...')
-    await page.waitForSelector(
-      'button.fds-button2.utility.fds-dropdown-trigger',
-      {
-        visible: true,
-        timeout: 10000,
-      }
-    )
+    // // wait for the more filter button
+    // logger.info('Waiting for the More filters button...')
+    // await page.waitForSelector(
+    //   'button.fds-button2.utility.fds-dropdown-trigger',
+    //   {
+    //     visible: true,
+    //     timeout: 10000,
+    //   }
+    // )
 
-    // Click the More filters button
-    await page.evaluate(() => {
-      const moreFiltersButton = Array.from(
-        document.querySelectorAll(
-          'button.fds-button2.utility.fds-dropdown-trigger'
-        )
-      ).find((button) => {
-        const label = button.querySelector('.fds-button2-label')
-        return label && label.textContent.trim() === 'More filters'
-      })
+    // // Click the More filters button
+    // await page.evaluate(() => {
+    //   const moreFiltersButton = Array.from(
+    //     document.querySelectorAll(
+    //       'button.fds-button2.utility.fds-dropdown-trigger'
+    //     )
+    //   ).find((button) => {
+    //     const label = button.querySelector('.fds-button2-label')
+    //     return label && label.textContent.trim() === 'More filters'
+    //   })
 
-      if (moreFiltersButton) {
-        moreFiltersButton.click()
-        return true
-      }
-      throw new Error('More filters button not found')
-    })
+    //   if (moreFiltersButton) {
+    //     moreFiltersButton.click()
+    //     return true
+    //   }
+    //   throw new Error('More filters button not found')
+    // })
 
-    logger.info(
-      'Clicked More filters button, waiting for dropdown to appear...'
-    )
+    // logger.info(
+    //   'Clicked More filters button, waiting for dropdown to appear...'
+    // )
 
-    // Check the "Expedia Collect Payments" and "Expedia Virtual Card" checkboxes
-    await page.evaluate(() => {
-      // Find all checkbox labels
-      const checkboxLabels = Array.from(
-        document.querySelectorAll('.fds-switch-checkbox')
-      )
+    // // Check the "Expedia Collect Payments" and "Expedia Virtual Card" checkboxes
+    // await page.evaluate(() => {
+    //   // Find all checkbox labels
+    //   const checkboxLabels = Array.from(
+    //     document.querySelectorAll('.fds-switch-checkbox')
+    //   )
 
-      // Find and click the "Expedia Collect Payments" checkbox
-      const expediaCollectPaymentsLabel = checkboxLabels.find(
-        (label) =>
-          label.querySelector('.fds-switch-label') &&
-          label.querySelector('.fds-switch-label').textContent.trim() ===
-            'Expedia Collect Payments'
-      )
+    //   // Find and click the "Expedia Collect Payments" checkbox
+    //   const expediaCollectPaymentsLabel = checkboxLabels.find(
+    //     (label) =>
+    //       label.querySelector('.fds-switch-label') &&
+    //       label.querySelector('.fds-switch-label').textContent.trim() ===
+    //         'Expedia Collect Payments'
+    //   )
 
-      if (expediaCollectPaymentsLabel) {
-        const checkbox = expediaCollectPaymentsLabel.querySelector(
-          'input.fds-switch-input'
-        )
-        if (checkbox && !checkbox.checked) {
-          checkbox.click()
-          console.log('Checked "Expedia Collect Payments" checkbox')
-        }
-      } else {
-        console.log('Could not find "Expedia Collect Payments" checkbox')
-      }
+    //   if (expediaCollectPaymentsLabel) {
+    //     const checkbox = expediaCollectPaymentsLabel.querySelector(
+    //       'input.fds-switch-input'
+    //     )
+    //     if (checkbox && !checkbox.checked) {
+    //       checkbox.click()
+    //       console.log('Checked "Expedia Collect Payments" checkbox')
+    //     }
+    //   } else {
+    //     console.log('Could not find "Expedia Collect Payments" checkbox')
+    //   }
 
-      // Find and click the "Expedia Virtual Card" checkbox
-      const expediaVirtualCardLabel = checkboxLabels.find(
-        (label) =>
-          label.querySelector('.fds-switch-label') &&
-          label.querySelector('.fds-switch-label').textContent.trim() ===
-            'Expedia Virtual Card'
-      )
+    //   // Find and click the "Expedia Virtual Card" checkbox
+    //   const expediaVirtualCardLabel = checkboxLabels.find(
+    //     (label) =>
+    //       label.querySelector('.fds-switch-label') &&
+    //       label.querySelector('.fds-switch-label').textContent.trim() ===
+    //         'Expedia Virtual Card'
+    //   )
 
-      if (expediaVirtualCardLabel) {
-        const checkbox = expediaVirtualCardLabel.querySelector(
-          'input.fds-switch-input'
-        )
-        if (checkbox && !checkbox.checked) {
-          checkbox.click()
-          console.log('Checked "Expedia Virtual Card" checkbox')
-        }
-      } else {
-        console.log('Could not find "Expedia Virtual Card" checkbox')
-      }
-    })
+    //   if (expediaVirtualCardLabel) {
+    //     const checkbox = expediaVirtualCardLabel.querySelector(
+    //       'input.fds-switch-input'
+    //     )
+    //     if (checkbox && !checkbox.checked) {
+    //       checkbox.click()
+    //       console.log('Checked "Expedia Virtual Card" checkbox')
+    //     }
+    //   } else {
+    //     console.log('Could not find "Expedia Virtual Card" checkbox')
+    //   }
+    // })
 
-    logger.info(
-      "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes"
-    )
-    await delay(1000) // Wait for checkboxes to be checked
+    // logger.info(
+    //   "Selected 'Expedia Collect Payments' and 'Expedia Virtual Card' checkboxes"
+    // )
+    // await delay(1000) // Wait for checkboxes to be checked
 
-    // Click the Apply button in the dropdown
-    await page.evaluate(() => {
-      const filterApplyButton = Array.from(
-        document.querySelectorAll(
-          '.fds-dropdown-actions button.fds-button2.utility'
-        )
-      ).find((button) => {
-        const label = button.querySelector('.fds-button2-label')
-        return label && label.textContent.trim() === 'Apply'
-      })
+    // // Click the Apply button in the dropdown
+    // await page.evaluate(() => {
+    //   const filterApplyButton = Array.from(
+    //     document.querySelectorAll(
+    //       '.fds-dropdown-actions button.fds-button2.utility'
+    //     )
+    //   ).find((button) => {
+    //     const label = button.querySelector('.fds-button2-label')
+    //     return label && label.textContent.trim() === 'Apply'
+    //   })
 
-      if (filterApplyButton) {
-        filterApplyButton.click()
-        return true
-      }
-    })
+    //   if (filterApplyButton) {
+    //     filterApplyButton.click()
+    //     return true
+    //   }
+    // })
+    }
 
-    logger.info('Applied filters from dropdown')
-    await delay(2000)
+    // logger.info('Applied filters from dropdown')
+    // await delay(2000)
 
-    logger.info('Waiting for data to load...')
+    // logger.info('Waiting for data to load...')
 
     // Wait for the loading indicator to appear
-    await page
-      .waitForSelector('td .fds-loader.is-loading.is-visible', {
-        visible: true,
-        timeout: 10000,
-      })
-      .catch(() => logger.info('Loading indicator did not appear'))
+    // await page
+      // .waitForSelector('td .fds-loader.is-loading.is-visible', {
+      //   visible: true,
+      //   timeout: 10000,
+      // })
+      // .catch(() => logger.info('Loading indicator did not appear'))
 
     // Wait for the loading indicator to disappear
-    await page.waitForSelector('td .fds-loader.is-loading.is-visible', {
+    // await page.waitForSelector('td .fds-loader.is-loading.is-visible', {
+    //   hidden: true,
+    //   timeout: 30000,
+    // })
+
+    // logger.info('Loading completed, continuing with data processing...')
+
+    // Then continue with your existing code for processing the data...
+    // logger.info('Starting to process reservation data...')
+
+    // // Wait for the table to be visible
+    // await page.waitForSelector('table.fds-data-table', {
+    //   visible: true,
+    //   timeout: 30000,
+    // })
+
+    // Wait for data to load and stabilize
+    {
+    // let previousCount = 0
+    // let attempts = 0
+    // const maxAttempts = 15 // Increased max attempts
+
+    // while (attempts < maxAttempts) {
+    //   await delay(2000)
+
+    //   const currentCount = await page.evaluate(() => {
+    //     return document.querySelectorAll('td.guestName button.guestNameLink')
+    //       .length
+    //   })
+
+    //   logger.info(
+    //     `Found ${currentCount} reservations on attempt ${attempts + 1}...`
+    //   )
+
+    //   if (currentCount === previousCount && currentCount > 0) {
+    //     logger.info('Data count stabilized')
+    //     break
+    //   }
+
+    //   previousCount = currentCount
+    //   attempts++
+    // }
+    }
+
+    await page.waitForSelector('input.fds-field-input[name="searchInput"]', {
       hidden: true,
       timeout: 30000,
     })
 
-    logger.info('Loading completed, continuing with data processing...')
-
-    // Then continue with your existing code for processing the data...
-    logger.info('Starting to process reservation data...')
-
-    // Wait for the table to be visible
-    await page.waitForSelector('table.fds-data-table', {
-      visible: true,
-      timeout: 30000,
-    })
-
-    // Wait for data to load and stabilize
-    let previousCount = 0
-    let attempts = 0
-    const maxAttempts = 15 // Increased max attempts
-
-    while (attempts < maxAttempts) {
-      await delay(2000)
-
-      const currentCount = await page.evaluate(() => {
-        return document.querySelectorAll('td.guestName button.guestNameLink')
-          .length
-      })
-
-      logger.info(
-        `Found ${currentCount} reservations on attempt ${attempts + 1}...`
-      )
-
-      if (currentCount === previousCount && currentCount > 0) {
-        logger.info('Data count stabilized')
-        break
-      }
-
-      previousCount = currentCount
-      attempts++
+    const ReservationInputField = document.querySelector('input.fds-field-input[name="searchInput"]');
+    for (let char of id) {
+      await page.type('input.fds-field-input[name="searchInput"]', char, { delay: 150 }) // Increased delay
+      await delay(100) // Increased delay between characters
     }
+
+    await page.click('#save-button')
 
     // Final verification
     const finalCount = await page.evaluate(() => {
@@ -1429,10 +1772,10 @@ async function processReservationsPage(page, start_date, end_date) {
     }
 
     // After date range is applied and before scraping data
-    logger.info('Setting results per page to 100...')
-    await page.waitForSelector('.fds-pagination-selector select')
-    await page.click('.fds-pagination-selector select')
-    await page.select('.fds-pagination-selector select', '100')
+    // logger.info('Setting results per page to 100...')
+    // await page.waitForSelector('.fds-pagination-selector select')
+    // await page.click('.fds-pagination-selector select')
+    // await page.select('.fds-pagination-selector select', '100')
 
     // Wait for data to reload with 100 records
     await delay(3000)
@@ -1562,7 +1905,7 @@ async function processReservationsPage(page, start_date, end_date) {
             const isCanceled = await page.evaluate(() => {
               const dialogTitle = document.querySelector('.fds-dialog-title')
               return (
-                dialogTitle && dialogTitle.textContent.includes('Cancelled')
+                dialogTitle && (dialogTitle.textContent.includes('Cancelled') || dialogTitle.textContent.includes('Canceled'))
               )
             })
 

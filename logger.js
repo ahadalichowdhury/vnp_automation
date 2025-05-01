@@ -96,3 +96,30 @@ process.on('SIGINT', () => {
 });
 
 export default logger; 
+
+// 1. Instead of hotel name, we use an array containing hotel name and reservation ID array
+// 2. We provide Property name in searchbar and search
+// 2. Instead of Date, we provide reservation ID in search bar
+
+
+
+
+// hotels = [
+//     {
+//         name: 'Hotel name',
+//         idList: [
+//             '1535123', '1655352'
+//         ]
+//     }
+// ]
+
+// hotels2 = [
+//     {
+//         name: 'yhkbkjb',
+//         reservationID: '5616531'
+//     },
+//     {
+//         name: 'yhkbkjb',
+//         reservationID: '5616552'
+//     }
+// ]
