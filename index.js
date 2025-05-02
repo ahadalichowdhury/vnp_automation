@@ -53,33 +53,47 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 let verificationCode = ''
 
-const getDataFromSheet = async () => {
-  const workbook = xlsx.readFile('VNP_sheet.xlsx');
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-  const sheetData = xlsx.utils.sheet_to_json(sheet, { defval: '' });
+const getDataFromSheet = () => {
+  try {
+    const workbook = xlsx.readFile('VNP_sheet.xlsx');
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const sheetData = xlsx.utils.sheet_to_json(sheet, { defval: '' });
 
-  console.log(sheetData);
+    console.log('Sheet Data:', sheetData);
 
-  const hashMap = {};
-  const hotels = [0];
-  let cnt = 0;
-
-  for (const item of sheetData) {
-    if (!hashMap[item['Property Name']]) {
-      hashMap[item['Property Name']] = ++cnt;
-      hotels.push({
-        name: item['Property Name'],
-        idList: [item['Reservation ID']]
-      });
-    } else {
-      hotels[hashMap[item['Property Name']]].idList.push(item['Reservation ID']);
+    if (!Array.isArray(sheetData) || sheetData.length === 0) {
+      console.error('No data found in the sheet or invalid format');
+      return [];
     }
+
+    const hashMap = {};
+    const hotels = [];
+    let cnt = 0;
+
+    for (const item of sheetData) {
+      if (!item['Property Name']) {
+        console.warn('Skipping row with no Property Name:', item);
+        continue;
+      }
+
+      if (!hashMap[item['Property Name']]) {
+        hashMap[item['Property Name']] = ++cnt;
+        hotels.push({
+          name: item['Property Name'],
+          idList: [item['Reservation ID']]
+        });
+      } else {
+        hotels[hashMap[item['Property Name']] - 1].idList.push(item['Reservation ID']);
+      }
+    }
+
+    console.log('Processed Hotels:', hotels);
+    return hotels;
+  } catch (error) {
+    console.error('Error reading sheet:', error);
+    return [];
   }
-
-  hotels.splice(0, 1);
-
-  return hotels;
 }
 
 // Add this helper function at the top level
@@ -1745,561 +1759,612 @@ async function processReservationsPage(page, id) {
     // }
     }
 
-    await page.waitForSelector('input.fds-field-input[name="searchInput"]', {
-      hidden: true,
-      timeout: 30000,
-    })
+    try {
+      // Wait for the page to be fully loaded
+      await page.waitForSelector('.fds-layout', {
+        visible: true,
+        timeout: 30000,
+      });
 
-    const ReservationInputField = document.querySelector('input.fds-field-input[name="searchInput"]');
-    for (let char of id) {
-      await page.type('input.fds-field-input[name="searchInput"]', char, { delay: 150 }) // Increased delay
-      await delay(100) // Increased delay between characters
-    }
+      // Try to find the search input using multiple possible selectors
+      const searchInputSelectors = [
+        'input[name="searchInput"]',
+        'input.fds-field-input',
+        'input[type="text"]',
+        '.fds-field-input'
+      ];
 
-    await page.click('#save-button')
+      let searchInput = null;
+      for (const selector of searchInputSelectors) {
+        try {
+          searchInput = await page.waitForSelector(selector, {
+            visible: true,
+            timeout: 5000
+          });
+          if (searchInput) break;
+        } catch (e) {
+          continue;
+        }
+      }
 
-    // Final verification
-    const finalCount = await page.evaluate(() => {
-      return document.querySelectorAll('td.guestName button.guestNameLink')
-        .length
-    })
+      if (!searchInput) {
+        throw new Error('Could not find search input field');
+      }
 
-    logger.info(`Final reservation count: ${finalCount}`)
+      // Click the input field first
+      await searchInput.click();
+      await delay(1000);
 
-    if (finalCount === 0) {
-      logger.info('No reservations found after multiple attempts')
-      return []
-    }
+      // Clear any existing value
+      await page.evaluate(() => {
+        const input = document.querySelector('input[name="searchInput"]') || 
+                     document.querySelector('input.fds-field-input') ||
+                     document.querySelector('input[type="text"]');
+        if (input) input.value = '';
+      });
 
-    // After date range is applied and before scraping data
-    // logger.info('Setting results per page to 100...')
-    // await page.waitForSelector('.fds-pagination-selector select')
-    // await page.click('.fds-pagination-selector select')
-    // await page.select('.fds-pagination-selector select', '100')
+      // Type the ID into the search input - convert id to string and type it directly
+      const idString = String(id);
+      await page.type('input[name="searchInput"]', idString, { delay: 150 });
 
-    // Wait for data to reload with 100 records
-    await delay(3000)
-    await page.waitForSelector('table.fds-data-table tbody tr', {
-      visible: true,
-      timeout: 30000,
-    })
+      // Wait for the save button to be visible and clickable
+      await page.waitForSelector('#save-button', {
+        visible: true,
+        timeout: 10000,
+      });
 
-    // Initialize array for all reservations with Set for tracking duplicates
-    const pageReservations = []
-    const processedReservationIds = new Set()
+      // Click the save button
+      await page.click('#save-button');
 
-    // Function to check if there's a next page
-    const hasNextPage = async () => {
-      return await page.evaluate(() => {
-        const nextButton = document.querySelector(
-          '.fds-pagination-button.next button'
-        )
-        return nextButton && !nextButton.disabled
+      // Wait for the search to complete
+      await delay(2000);
+
+      // Final verification
+      const finalCount = await page.evaluate(() => {
+        return document.querySelectorAll('td.guestName button.guestNameLink')
+          .length
       })
-    }
 
-    // Function to get total results count
-    const getTotalResults = async () => {
-      const resultsText = await page.$eval(
-        '.fds-pagination-showing-result',
-        (el) => el.textContent
-      )
-      const match = resultsText.match(/of (\d+) Results/)
-      return match ? parseInt(match[1]) : 0
-    }
+      logger.info(`Final reservation count: ${finalCount}`)
 
-    const totalResults = await getTotalResults()
-    logger.info(`Total reservations to fetch: ${totalResults}`)
+      if (finalCount === 0) {
+        logger.info('No reservations found after multiple attempts')
+        return []
+      }
 
-    let currentPage = 1
-    let hasMore = true
+      // After date range is applied and before scraping data
+      // logger.info('Setting results per page to 100...')
+      // await page.waitForSelector('.fds-pagination-selector select')
+      // await page.click('.fds-pagination-selector select')
+      // await page.select('.fds-pagination-selector select', '100')
 
-    while (hasMore) {
-      try {
-        logger.info(`Processing page ${currentPage}...`)
+      // Wait for data to reload with 100 records
+      await delay(3000)
+      await page.waitForSelector('table.fds-data-table tbody tr', {
+        visible: true,
+        timeout: 30000,
+      })
 
-        // Wait for table data to load
-        await page.waitForSelector('table.fds-data-table tbody tr', {
-          visible: true,
-          timeout: 30000,
+      // Initialize array for all reservations with Set for tracking duplicates
+      const pageReservations = []
+      const processedReservationIds = new Set()
+
+      // Function to check if there's a next page
+      const hasNextPage = async () => {
+        return await page.evaluate(() => {
+          const nextButton = document.querySelector(
+            '.fds-pagination-button.next button'
+          )
+          return nextButton && !nextButton.disabled
         })
-        await delay(5000)
+      }
 
-        // Get reservations from current page
-        const rows = await page.$$('table.fds-data-table tbody tr')
+      // Function to get total results count
+      const getTotalResults = async () => {
+        const resultsText = await page.$eval(
+          '.fds-pagination-showing-result',
+          (el) => el.textContent
+        )
+        const match = resultsText.match(/of (\d+) Results/)
+        return match ? parseInt(match[1]) : 0
+      }
 
-        for (const row of rows) {
-          try {
-            // Get basic data first
-            const basicData = await page.evaluate((row) => {
-              return {
-                guestName:
-                  row
-                    .querySelector(
-                      'td.guestName button.guestNameLink span.fds-button2-label'
-                    )
-                    ?.textContent.trim() || '',
-                reservationId:
-                  row
-                    .querySelector('td.reservationId div.fds-cell')
-                    ?.textContent.trim() || '',
-                confirmationCode:
-                  row
-                    .querySelector(
-                      'td.confirmationCode label.confirmationCodeLabel'
-                    )
-                    ?.textContent.trim() || '',
-                checkInDate:
-                  row.querySelector('td.checkInDate')?.textContent.trim() || '',
-                checkOutDate:
-                  row.querySelector('td.checkOutDate')?.textContent.trim() ||
-                  '',
-                roomType:
-                  row.querySelector('td.roomType')?.textContent.trim() || '',
-                bookingAmount:
-                  row
-                    .querySelector('td.bookingAmount .fds-currency-value')
-                    ?.textContent.trim() || '',
-                bookedDate:
-                  row.querySelector('td.bookedOnDate')?.textContent.trim() ||
-                  '',
-              }
-            }, row)
+      const totalResults = await getTotalResults()
+      logger.info(`Total reservations to fetch: ${totalResults}`)
 
-            // Check if we've already processed this reservation
-            if (processedReservationIds.has(basicData.reservationId)) {
-              logger.info(
-                `Skipping duplicate reservation: ${basicData.reservationId}`
-              )
-              continue
-            }
+      let currentPage = 1
+      let hasMore = true
 
-            // Add to processed set
-            processedReservationIds.add(basicData.reservationId)
+      while (hasMore) {
+        try {
+          logger.info(`Processing page ${currentPage}...`)
 
-            // Get card details
-            const guestNameButton = await row.$(
-              'td.guestName button.guestNameLink'
-            )
-            await guestNameButton.click()
+          // Wait for table data to load
+          await page.waitForSelector('table.fds-data-table tbody tr', {
+            visible: true,
+            timeout: 30000,
+          })
+          await delay(5000)
 
-            // Wait for initial dialog to appear with timeout
+          // Get reservations from current page
+          const rows = await page.$$('table.fds-data-table tbody tr')
+
+          for (const row of rows) {
             try {
-              await Promise.race([
-                page.waitForSelector('.fds-dialog', {
-                  visible: true,
-                  timeout: 8000,
-                }),
-                new Promise((_, reject) =>
-                  setTimeout(() => reject(new Error('Dialog timeout')), 8000)
-                ),
-              ])
-            } catch (error) {
-              logger.info(
-                'Dialog did not appear within timeout, skipping to next reservation'
-              )
-              continue
-            }
-
-            // Check if this is a canceled reservation
-            const isCanceled = await page.evaluate(() => {
-              const dialogTitle = document.querySelector('.fds-dialog-title')
-              return (
-                dialogTitle && (dialogTitle.textContent.includes('Cancelled') || dialogTitle.textContent.includes('Canceled'))
-              )
-            })
-
-            if (isCanceled) {
-              logger.info(
-                'Found canceled reservation, extracting payment information...'
-              )
-              try {
-                // First, ensure the dialog is visible
-                await page.waitForSelector('.fds-dialog-header', {
-                  visible: true,
-                  timeout: 5000,
-                })
-
-                // Wait for payment summary section to be visible
-                await page.waitForSelector('.fds-card-header-title', {
-                  visible: true,
-                  timeout: 5000,
-                })
-
-                // Extract payment information from canceled reservation
-                const paymentInfo = await page.evaluate(() => {
-                  const getCurrencyValue = (title) => {
-                    // Find all section titles
-                    const sections = Array.from(document.querySelectorAll('.sidePanelSectionTitle'));
-                    const section = sections.find(el => el.textContent.trim() === title);
-                    if (!section) return '0.00';
-                    
-                    // Get the currency value from the next cell
-                    const valueCell = section.closest('.fds-grid').querySelector('.fds-currency-value');
-                    return valueCell ? valueCell.textContent.trim() : '0.00';
-                  }
-
-                  return {
-                    cancellationFee: getCurrencyValue('Cancellation fee'),
-                    expediaCompensation: getCurrencyValue('Expedia compensation'),
-                    totalPayout: getCurrencyValue('Your total payout')
-                  }
-                })
-
-                logger.info('Extracted payment info for canceled reservation:', paymentInfo)
-
-                // Add the payment information to the basic data with canceled-specific fields
-                const canceledReservation = {
-                  ...basicData,
-                  cardNumber: 'N/A',
-                  expiryDate: 'N/A',
-                  cvv: 'N/A',
-                  hasCardInfo: false,
-                  hasPaymentInfo: true,
-                  totalGuestPayment: '0.00',
-                  cancellationFee: paymentInfo.cancellationFee,
-                  expediaCompensation: paymentInfo.expediaCompensation,
-                  totalPayout: paymentInfo.totalPayout,
-                  amountToChargeOrRefund: paymentInfo.cancellationFee,
-                  reasonOfCharge: 'Cancellation Fee',
-                  status: 'Cancelled'
-                }
-
-                pageReservations.push(canceledReservation)
-                logger.info('Added canceled reservation to results:', canceledReservation)
-
-                // Try each closing method sequentially with proper waits and checks
-                const closingMethods = [
-                  // Method 1: Click the close button using page.click with waitForSelector
-                  async () => {
-                    const closeButton = await page.waitForSelector(
-                      '.fds-dialog-header button.dialog-close',
-                      {
-                        visible: true,
-                        timeout: 2000,
-                      }
-                    )
-                    if (closeButton) {
-                      await closeButton.click()
-                      return true
-                    }
-                    return false
-                  },
-                  // Method 2: Use JavaScript click with explicit visibility check
-                  async () => {
-                    const isSuccess = await page.evaluate(() => {
-                      const closeButton = document.querySelector(
-                        '.fds-dialog-header button.dialog-close'
+              // Get basic data first
+              const basicData = await page.evaluate((row) => {
+                return {
+                  guestName:
+                    row
+                      .querySelector(
+                        'td.guestName button.guestNameLink span.fds-button2-label'
                       )
-                      if (
-                        closeButton &&
-                        window.getComputedStyle(closeButton).display !== 'none'
-                      ) {
-                        closeButton.click()
-                        return true
-                      }
-                      return false
-                    })
-                    return isSuccess
-                  },
-                  // Method 3: Try alternative close button selector
-                  async () => {
-                    const altCloseButton = await page.$(
-                      '.fds-dialog button[aria-label="Close"]'
-                    )
-                    if (altCloseButton) {
-                      await altCloseButton.click()
-                      return true
-                    }
-                    return false
-                  },
-                  // Method 4: Press Escape key as last resort
-                  async () => {
-                    await page.keyboard.press('Escape')
-                    return true
-                  },
-                ]
-
-                // Try each method until one succeeds
-                let dialogClosed = false
-                for (const method of closingMethods) {
-                  try {
-                    const success = await method()
-                    if (success) {
-                      // Wait for dialog to be hidden
-                      await page
-                        .waitForSelector('.fds-dialog-header', {
-                          hidden: true,
-                          timeout: 3000,
-                        })
-                        .catch(() => {})
-
-                      // Double check if dialog is really gone
-                      const dialogStillVisible = await page.$(
-                        '.fds-dialog-header'
+                      ?.textContent.trim() || '',
+                  reservationId:
+                    row
+                      .querySelector('td.reservationId div.fds-cell')
+                      ?.textContent.trim() || '',
+                  confirmationCode:
+                    row
+                      .querySelector(
+                        'td.confirmationCode label.confirmationCodeLabel'
                       )
-                      if (!dialogStillVisible) {
-                        dialogClosed = true
-                        break
-                      }
-                    }
-                  } catch (methodError) {
-                    logger.debug(
-                      `Dialog close method failed: ${methodError.message}`
-                    )
-                    continue
-                  }
+                      ?.textContent.trim() || '',
+                  checkInDate:
+                    row.querySelector('td.checkInDate')?.textContent.trim() || '',
+                  checkOutDate:
+                    row.querySelector('td.checkOutDate')?.textContent.trim() ||
+                    '',
+                  roomType:
+                    row.querySelector('td.roomType')?.textContent.trim() || '',
+                  bookingAmount:
+                    row
+                      .querySelector('td.bookingAmount .fds-currency-value')
+                      ?.textContent.trim() || '',
+                  bookedDate:
+                    row.querySelector('td.bookedOnDate')?.textContent.trim() ||
+                    '',
                 }
+              }, row)
 
-                if (!dialogClosed) {
-                  throw new Error('All dialog closing methods failed')
-                }
-
-                await delay(1000) // Short stabilization delay
-                continue // Skip to next reservation
-              } catch (error) {
-                logger.warn(
-                  `Warning: Could not close canceled reservation dialog: ${error.message}`
+              // Check if we've already processed this reservation
+              if (processedReservationIds.has(basicData.reservationId)) {
+                logger.info(
+                  `Skipping duplicate reservation: ${basicData.reservationId}`
                 )
                 continue
               }
-            }
 
-            // Wait a bit for content to load
-            await delay(2000)
+              // Add to processed set
+              processedReservationIds.add(basicData.reservationId)
 
-            // Scroll to the bottom of dialog content and wait
-            await page.evaluate(() => {
-              const dialogContent = document.querySelector(
-                '.fds-dialog-content'
+              // Get card details
+              const guestNameButton = await row.$(
+                'td.guestName button.guestNameLink'
               )
-              if (dialogContent) {
-                dialogContent.scrollTo(0, dialogContent.scrollHeight)
-              }
-            })
+              await guestNameButton.click()
 
-            // Wait for content to load after scroll
-            await delay(2000)
-
-            // Get card details with retry mechanism
-            let cardData = null
-            let paymentData = null
-            let remainingAmountToCharge = null
-            let amountToRefund = null
-            let retries = 0
-            while (!cardData && !paymentData && retries < 3) {
+              // Wait for initial dialog to appear with timeout
               try {
-                // First try to get card details
-                cardData = await page.evaluate(() => {
-                  const cardNumber =
-                    document
-                      .querySelector('.cardNumber.replay-conceal bdi')
-                      ?.textContent.trim() || ''
-                  const expiryDate =
-                    document
-                      .querySelector(
-                        '.cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal'
-                      )
-                      ?.textContent.trim() || ''
-                  const cvv =
-                    document
-                      .querySelectorAll(
-                        '.cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal'
-                      )[1]
-                      ?.textContent.trim() || ''
+                await Promise.race([
+                  page.waitForSelector('.fds-dialog', {
+                    visible: true,
+                    timeout: 8000,
+                  }),
+                  new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Dialog timeout')), 8000)
+                  ),
+                ])
+              } catch (error) {
+                logger.info(
+                  'Dialog did not appear within timeout, skipping to next reservation'
+                )
+                continue
+              }
 
-                  if (cardNumber) {
+              // Check if this is a canceled reservation
+              const isCanceled = await page.evaluate(() => {
+                const dialogTitle = document.querySelector('.fds-dialog-title')
+                return (
+                  dialogTitle && (dialogTitle.textContent.includes('Cancelled') || dialogTitle.textContent.includes('Canceled'))
+                )
+              })
+
+              if (isCanceled) {
+                logger.info(
+                  'Found canceled reservation, extracting payment information...'
+                )
+                try {
+                  // First, ensure the dialog is visible
+                  await page.waitForSelector('.fds-dialog-header', {
+                    visible: true,
+                    timeout: 5000,
+                  })
+
+                  // Wait for payment summary section to be visible
+                  await page.waitForSelector('.fds-card-header-title', {
+                    visible: true,
+                    timeout: 5000,
+                  })
+
+                  // Extract payment information from canceled reservation
+                  const paymentInfo = await page.evaluate(() => {
+                    const getCurrencyValue = (title) => {
+                      // Find all section titles
+                      const sections = Array.from(document.querySelectorAll('.sidePanelSectionTitle'));
+                      const section = sections.find(el => el.textContent.trim() === title);
+                      if (!section) return '0.00';
+                      
+                      // Get the currency value from the next cell
+                      const valueCell = section.closest('.fds-grid').querySelector('.fds-currency-value');
+                      return valueCell ? valueCell.textContent.trim() : '0.00';
+                    }
+
                     return {
-                      cardNumber,
-                      expiryDate,
-                      cvv,
+                      cancellationFee: getCurrencyValue('Cancellation fee'),
+                      expediaCompensation: getCurrencyValue('Expedia compensation'),
+                      totalPayout: getCurrencyValue('Your total payout')
+                    }
+                  })
+
+                  logger.info('Extracted payment info for canceled reservation:', paymentInfo)
+
+                  // Add the payment information to the basic data with canceled-specific fields
+                  const canceledReservation = {
+                    ...basicData,
+                    cardNumber: 'N/A',
+                    expiryDate: 'N/A',
+                    cvv: 'N/A',
+                    hasCardInfo: false,
+                    hasPaymentInfo: true,
+                    totalGuestPayment: '0.00',
+                    cancellationFee: paymentInfo.cancellationFee,
+                    expediaCompensation: paymentInfo.expediaCompensation,
+                    totalPayout: paymentInfo.totalPayout,
+                    amountToChargeOrRefund: paymentInfo.cancellationFee,
+                    reasonOfCharge: 'Cancellation Fee',
+                    status: 'Cancelled'
+                  }
+
+                  pageReservations.push(canceledReservation)
+                  logger.info('Added canceled reservation to results:', canceledReservation)
+
+                  // Try each closing method sequentially with proper waits and checks
+                  const closingMethods = [
+                    // Method 1: Click the close button using page.click with waitForSelector
+                    async () => {
+                      const closeButton = await page.waitForSelector(
+                        '.fds-dialog-header button.dialog-close',
+                        {
+                          visible: true,
+                          timeout: 2000,
+                        }
+                      )
+                      if (closeButton) {
+                        await closeButton.click()
+                        return true
+                      }
+                      return false
+                    },
+                    // Method 2: Use JavaScript click with explicit visibility check
+                    async () => {
+                      const isSuccess = await page.evaluate(() => {
+                        const closeButton = document.querySelector(
+                          '.fds-dialog-header button.dialog-close'
+                        )
+                        if (
+                          closeButton &&
+                          window.getComputedStyle(closeButton).display !== 'none'
+                        ) {
+                          closeButton.click()
+                          return true
+                        }
+                        return false
+                      })
+                      return isSuccess
+                    },
+                    // Method 3: Try alternative close button selector
+                    async () => {
+                      const altCloseButton = await page.$(
+                        '.fds-dialog button[aria-label="Close"]'
+                      )
+                      if (altCloseButton) {
+                        await altCloseButton.click()
+                        return true
+                      }
+                      return false
+                    },
+                    // Method 4: Press Escape key as last resort
+                    async () => {
+                      await page.keyboard.press('Escape')
+                      return true
+                    },
+                  ]
+
+                  // Try each method until one succeeds
+                  let dialogClosed = false
+                  for (const method of closingMethods) {
+                    try {
+                      const success = await method()
+                      if (success) {
+                        // Wait for dialog to be hidden
+                        await page
+                          .waitForSelector('.fds-dialog-header', {
+                            hidden: true,
+                            timeout: 3000,
+                          })
+                          .catch(() => {})
+
+                        // Double check if dialog is really gone
+                        const dialogStillVisible = await page.$(
+                          '.fds-dialog-header'
+                        )
+                        if (!dialogStillVisible) {
+                          dialogClosed = true
+                          break
+                        }
+                      }
+                    } catch (methodError) {
+                      logger.debug(
+                        `Dialog close method failed: ${methodError.message}`
+                      )
+                      continue
                     }
                   }
-                  return null
-                })
 
-                // If no card data, try to get payment information
-                if (!cardData) {
-                  paymentData = await page.evaluate(() => {
-                    // Find all section titles
-                    const sectionTitles = Array.from(
-                      document.querySelectorAll('.sidePanelSectionTitle')
-                    )
+                  if (!dialogClosed) {
+                    throw new Error('All dialog closing methods failed')
+                  }
 
-                    // Find the payment sections
-                    const totalGuestPaymentTitle = sectionTitles.find((el) =>
-                      el.textContent.includes('Total guest payment')
-                    )
-                    const expediaCompensationTitle = sectionTitles.find((el) =>
-                      el.textContent.includes('Expedia compensation')
-                    )
-                    const totalPayoutTitle = sectionTitles.find((el) =>
-                      el.textContent.includes('Your total payout')
-                    )
+                  await delay(1000) // Short stabilization delay
+                  continue // Skip to next reservation
+                } catch (error) {
+                  logger.warn(
+                    `Warning: Could not close canceled reservation dialog: ${error.message}`
+                  )
+                  continue
+                }
+              }
 
-                    // Get the values
-                    const totalGuestPayment =
-                      totalGuestPaymentTitle?.nextElementSibling
-                        ?.querySelector('.fds-currency-value')
+              // Wait a bit for content to load
+              await delay(2000)
+
+              // Scroll to the bottom of dialog content and wait
+              await page.evaluate(() => {
+                const dialogContent = document.querySelector(
+                  '.fds-dialog-content'
+                )
+                if (dialogContent) {
+                  dialogContent.scrollTo(0, dialogContent.scrollHeight)
+                }
+              })
+
+              // Wait for content to load after scroll
+              await delay(2000)
+
+              // Get card details with retry mechanism
+              let cardData = null
+              let paymentData = null
+              let remainingAmountToCharge = null
+              let amountToRefund = null
+              let retries = 0
+              while (!cardData && !paymentData && retries < 3) {
+                try {
+                  // First try to get card details
+                  cardData = await page.evaluate(() => {
+                    const cardNumber =
+                      document
+                        .querySelector('.cardNumber.replay-conceal bdi')
                         ?.textContent.trim() || ''
-                    const expediaCompensation =
-                      expediaCompensationTitle?.nextElementSibling
-                        ?.querySelector('.fds-currency-value')
+                    const expiryDate =
+                      document
+                        .querySelector(
+                          '.cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal'
+                        )
                         ?.textContent.trim() || ''
-                    const totalPayout =
-                      totalPayoutTitle?.nextElementSibling
-                        ?.querySelector('.fds-currency-value')
+                    const cvv =
+                      document
+                        .querySelectorAll(
+                          '.cardDetails .fds-cell.all-cell-1-4.fds-type-color-primary.replay-conceal'
+                        )[1]
                         ?.textContent.trim() || ''
 
-                    if (totalGuestPayment) {
+                    if (cardNumber) {
                       return {
-                        totalGuestPayment,
-                        expediaCompensation,
-                        totalPayout,
+                        cardNumber,
+                        expiryDate,
+                        cvv,
                       }
                     }
                     return null
                   })
-                }
 
-                // Extract "Remaining amount to charge" and "Amount to refund"
-                const additionalPaymentInfo = await page.evaluate(() => {
-                  // Find "Remaining amount to charge"
-                  const remainingAmountSection = Array.from(
-                    document.querySelectorAll('.fds-cell.sidePanelSection')
-                  ).find((section) =>
-                    section.textContent.includes('Remaining amount to charge')
-                  )
+                  // If no card data, try to get payment information
+                  if (!cardData) {
+                    paymentData = await page.evaluate(() => {
+                      // Find all section titles
+                      const sectionTitles = Array.from(
+                        document.querySelectorAll('.sidePanelSectionTitle')
+                      )
 
-                  const remainingAmount =
-                    remainingAmountSection
-                      ?.querySelector('.fds-currency-value')
-                      ?.textContent.trim() || ''
+                      // Find the payment sections
+                      const totalGuestPaymentTitle = sectionTitles.find((el) =>
+                        el.textContent.includes('Total guest payment')
+                      )
+                      const expediaCompensationTitle = sectionTitles.find((el) =>
+                        el.textContent.includes('Expedia compensation')
+                      )
+                      const totalPayoutTitle = sectionTitles.find((el) =>
+                        el.textContent.includes('Your total payout')
+                      )
 
-                  // Find "Amount to refund"
-                  const refundSection = Array.from(
-                    document.querySelectorAll('.fds-grid.sidePanelSection')
-                  ).find((section) =>
-                    section.textContent.includes('Amount to refund')
-                  )
+                      // Get the values
+                      const totalGuestPayment =
+                        totalGuestPaymentTitle?.nextElementSibling
+                          ?.querySelector('.fds-currency-value')
+                          ?.textContent.trim() || ''
+                      const expediaCompensation =
+                        expediaCompensationTitle?.nextElementSibling
+                          ?.querySelector('.fds-currency-value')
+                          ?.textContent.trim() || ''
+                      const totalPayout =
+                        totalPayoutTitle?.nextElementSibling
+                          ?.querySelector('.fds-currency-value')
+                          ?.textContent.trim() || ''
 
-                  const refundAmount =
-                    refundSection
-                      ?.querySelector('.fds-currency-value')
-                      ?.textContent.trim() || ''
-
-                  return {
-                    remainingAmountToCharge: remainingAmount,
-                    amountToRefund: refundAmount,
+                      if (totalGuestPayment) {
+                        return {
+                          totalGuestPayment,
+                          expediaCompensation,
+                          totalPayout,
+                        }
+                      }
+                      return null
+                    })
                   }
-                })
 
-                if (additionalPaymentInfo) {
-                  remainingAmountToCharge =
-                    additionalPaymentInfo.remainingAmountToCharge
-                  amountToRefund = additionalPaymentInfo.amountToRefund
-
-                  if (remainingAmountToCharge) {
-                    logger.info(
-                      `Found Remaining amount to charge: ${remainingAmountToCharge}`
+                  // Extract "Remaining amount to charge" and "Amount to refund"
+                  const additionalPaymentInfo = await page.evaluate(() => {
+                    // Find "Remaining amount to charge"
+                    const remainingAmountSection = Array.from(
+                      document.querySelectorAll('.fds-cell.sidePanelSection')
+                    ).find((section) =>
+                      section.textContent.includes('Remaining amount to charge')
                     )
-                  }
 
-                  if (amountToRefund) {
-                    logger.info(`Found Amount to refund: ${amountToRefund}`)
+                    const remainingAmount =
+                      remainingAmountSection
+                        ?.querySelector('.fds-currency-value')
+                        ?.textContent.trim() || ''
+
+                    // Find "Amount to refund"
+                    const refundSection = Array.from(
+                      document.querySelectorAll('.fds-grid.sidePanelSection')
+                    ).find((section) =>
+                      section.textContent.includes('Amount to refund')
+                    )
+
+                    const refundAmount =
+                      refundSection
+                        ?.querySelector('.fds-currency-value')
+                        ?.textContent.trim() || ''
+
+                    return {
+                      remainingAmountToCharge: remainingAmount,
+                      amountToRefund: refundAmount,
+                    }
+                  })
+
+                  if (additionalPaymentInfo) {
+                    remainingAmountToCharge =
+                      additionalPaymentInfo.remainingAmountToCharge
+                    amountToRefund = additionalPaymentInfo.amountToRefund
+
+                    if (remainingAmountToCharge) {
+                      logger.info(
+                        `Found Remaining amount to charge: ${remainingAmountToCharge}`
+                      )
+                    }
+
+                    if (amountToRefund) {
+                      logger.info(`Found Amount to refund: ${amountToRefund}`)
+                    }
                   }
+                } catch (e) {
+                  retries++
+                  await delay(1000)
                 }
-              } catch (e) {
-                retries++
-                await delay(1000)
               }
-            }
 
-            //////////////////////////////////////////////////////////////
-            //close the side panel
-            //////////////////////////////////////////////////////////////
-            try {
-              await page.click('.fds-dialog-header button.dialog-close')
-              await delay(1500)
-            } catch (e) {
-              logger.warn('Warning: Could not close dialog normally')
-            }
+              //////////////////////////////////////////////////////////////
+              //close the side panel
+              //////////////////////////////////////////////////////////////
+              try {
+                await page.click('.fds-dialog-header button.dialog-close')
+                await delay(1500)
+              } catch (e) {
+                logger.warn('Warning: Could not close dialog normally')
+              }
 
-            // Add to reservations array with either card data or payment data
-            pageReservations.push({
-              ...basicData,
-              ...(cardData || {}),
-              ...(paymentData || {}),
-              hasCardInfo: !!cardData,
-              hasPaymentInfo: !!paymentData,
-              remainingAmountToCharge: remainingAmountToCharge || 'N/A',
-              amountToRefund: amountToRefund || 'N/A',
-              amountToChargeOrRefund:
-                remainingAmountToCharge || amountToRefund || 'N/A',
-              reasonOfCharge: remainingAmountToCharge
-                ? 'Remaining Amount to Charge'
-                : amountToRefund
-                ? 'Amount to Refund'
-                : 'N/A',
-            })
-          } catch (error) {
-            logger.info(`Error processing reservation: ${error.message}`)
-            if (basicData) {
+              // Add to reservations array with either card data or payment data
               pageReservations.push({
                 ...basicData,
-                cardNumber: 'N/A',
-                expiryDate: 'N/A',
-                cvv: 'N/A',
-                remainingAmountToCharge: 'N/A',
-                amountToRefund: 'N/A',
-                amountToChargeOrRefund: 'N/A',
-                reasonOfCharge: 'N/A',
+                ...(cardData || {}),
+                ...(paymentData || {}),
+                hasCardInfo: !!cardData,
+                hasPaymentInfo: !!paymentData,
+                remainingAmountToCharge: remainingAmountToCharge || 'N/A',
+                amountToRefund: amountToRefund || 'N/A',
+                amountToChargeOrRefund:
+                  remainingAmountToCharge || amountToRefund || 'N/A',
+                reasonOfCharge: remainingAmountToCharge
+                  ? 'Remaining Amount to Charge'
+                  : amountToRefund
+                  ? 'Amount to Refund'
+                  : 'N/A',
               })
+            } catch (error) {
+              logger.info(`Error processing reservation: ${error.message}`)
+              if (basicData) {
+                pageReservations.push({
+                  ...basicData,
+                  cardNumber: 'N/A',
+                  expiryDate: 'N/A',
+                  cvv: 'N/A',
+                  remainingAmountToCharge: 'N/A',
+                  amountToRefund: 'N/A',
+                  amountToChargeOrRefund: 'N/A',
+                  reasonOfCharge: 'N/A',
+                })
+              }
             }
           }
-        }
 
-        logger.info(
-          `Processed ${pageReservations.length} of ${totalResults} reservations`
-        )
+          logger.info(
+            `Processed ${pageReservations.length} of ${totalResults} reservations`
+          )
 
-        // Check if there's a next page
-        hasMore = await hasNextPage()
-        if (hasMore) {
-          // Scroll down smoothly before clicking next page
-          await page.evaluate(() => {
-            window.scrollBy({
-              top: 300,
-              behavior: 'smooth',
+          // Check if there's a next page
+          hasMore = await hasNextPage()
+          if (hasMore) {
+            // Scroll down smoothly before clicking next page
+            await page.evaluate(() => {
+              window.scrollBy({
+                top: 300,
+                behavior: 'smooth',
+              })
             })
-          })
-          await delay(1500) // Wait for scroll animation
+            await delay(1500) // Wait for scroll animation
 
-          await page.click('.fds-pagination-button.next button')
-          await delay(2000)
-          currentPage++
+            await page.click('.fds-pagination-button.next button')
+            await delay(2000)
+            currentPage++
+          }
+        } catch (pageError) {
+          logger.info(
+            `Error processing page ${currentPage}: ${pageError.message}`
+          )
+          // Try to recover by reloading the page
+          await page.reload({ waitUntil: 'networkidle0' })
+          await delay(5000)
         }
-      } catch (pageError) {
-        logger.info(
-          `Error processing page ${currentPage}: ${pageError.message}`
-        )
-        // Try to recover by reloading the page
-        await page.reload({ waitUntil: 'networkidle0' })
-        await delay(5000)
       }
-    }
 
-    logger.info(
-      `Date scraping completed for ${start_date} to ${end_date}. Found total ${pageReservations.length} reservations on this tab`
-    )
-
-    // Log if no reservations were found for this date range
-    if (pageReservations.length === 0) {
-      logger.warn(
-        `No reservations found for date range: ${start_date} to ${end_date}. This date range may be missing data.`
+      logger.info(
+        `Date scraping completed for ${start_date} to ${end_date}. Found total ${pageReservations.length} reservations on this tab`
       )
+
+      // Log if no reservations were found for this date range
+      if (pageReservations.length === 0) {
+        logger.warn(
+          `No reservations found for date range: ${start_date} to ${end_date}. This date range may be missing data.`
+        )
+      }
+      return pageReservations
+    } catch (error) {
+      logger.error(`Error processing tab: ${error.message}`)
+      return []
     }
-    return pageReservations
   } catch (error) {
     logger.error(`Error processing tab: ${error.message}`)
     return []
